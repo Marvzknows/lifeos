@@ -24,6 +24,7 @@ import {
   Receipt,
   CreditCard,
 } from "lucide-react";
+import { ModeToggle } from "./mode-toggle";
 
 // This is sample data.
 const data = {
@@ -62,7 +63,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <VersionSwitcher />
+        <div className="flex items-center justify-between">
+          <VersionSwitcher />
+          <ModeToggle />
+        </div>
       </SidebarHeader>
       <SidebarContent>
         {data.navMain.map((group) => (

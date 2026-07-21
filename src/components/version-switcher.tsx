@@ -9,7 +9,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { GalleryVerticalEndIcon } from "lucide-react";
+import { LifeOsIcon } from "./icons/life-os-icon";
 
 export function VersionSwitcher() {
   return (
@@ -25,7 +25,7 @@ export function VersionSwitcher() {
             }
           >
             <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-              <GalleryVerticalEndIcon className="size-4" />
+              <LifeOsIcon className="h-5 w-5" />
             </div>
             <div className="flex flex-col gap-0.5 leading-none">
               <span className="font-bold">MyLife OS</span>
