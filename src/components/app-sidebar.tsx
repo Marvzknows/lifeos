@@ -28,12 +28,20 @@ import { ModeToggle } from "./mode-toggle";
 
 // This is sample data.
 const data = {
-  navMain: [
+  navItems: [
+    {
+      title: "Dashboard",
+      url: "#",
+      isActive: true,
+      icon: LayoutDashboard,
+    },
+  ],
+
+  navGroups: [
     {
       title: "PRODUCTIVITY",
-      url: "#",
       items: [
-        { title: "Tasks", url: "#", isActive: true, icon: CheckSquare },
+        { title: "Tasks", url: "#", isActive: false, icon: CheckSquare },
         { title: "Calendar", url: "#", isActive: false, icon: Calendar },
         { title: "Notes", url: "#", isActive: false, icon: NotebookText },
         { title: "Goals", url: "#", isActive: false, icon: Target },
@@ -41,10 +49,8 @@ const data = {
       ],
     },
     {
-      title: "FINANACE",
-      url: "#",
+      title: "FINANCE",
       items: [
-        { title: "Overview", url: "#", isActive: false, icon: LayoutDashboard },
         {
           title: "Transactions",
           url: "#",
@@ -53,7 +59,7 @@ const data = {
         },
         { title: "Budget", url: "#", isActive: false, icon: Wallet },
         { title: "Bills", url: "#", isActive: false, icon: Receipt },
-        { title: "Subscription", url: "#", isActive: false, icon: CreditCard },
+        { title: "Subscriptions", url: "#", isActive: false, icon: CreditCard },
       ],
     },
   ],
@@ -69,17 +75,35 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        {data.navMain.map((group) => (
+        {/* Standalone items */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {data.navItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    isActive={item.isActive}
+                    render={<a href={item.url} />}
+                  >
+                    <item.icon />
+                    <span>{item.title}</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Grouped items */}
+        {data.navGroups.map((group) => (
           <SidebarGroup key={group.title}>
-            <SidebarGroupLabel className="font-semibold text-muted-foreground">
-              {group.title}
-            </SidebarGroupLabel>
+            <SidebarGroupLabel>{group.title}</SidebarGroupLabel>
+
             <SidebarGroupContent>
               <SidebarMenu>
                 {group.items.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
-                      className="text-xs"
                       isActive={item.isActive}
                       render={<a href={item.url} />}
                     >
