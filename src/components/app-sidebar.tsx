@@ -41,11 +41,11 @@ const data = {
     {
       title: "PRODUCTIVITY",
       items: [
-        { title: "Tasks", url: "#", isActive: false, icon: CheckSquare },
+        { title: "Tasks", url: "/tasks", isActive: false, icon: CheckSquare },
         { title: "Calendar", url: "#", isActive: false, icon: Calendar },
-        { title: "Notes", url: "#", isActive: false, icon: NotebookText },
+        { title: "Notes", url: "notes", isActive: false, icon: NotebookText },
         { title: "Goals", url: "#", isActive: false, icon: Target },
-        { title: "Journal", url: "#", isActive: false, icon: BookOpen },
+        { title: "Journal", url: "journal", isActive: false, icon: BookOpen },
       ],
     },
     {
