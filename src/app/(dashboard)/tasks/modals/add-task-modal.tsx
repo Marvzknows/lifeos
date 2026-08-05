@@ -14,7 +14,12 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import {
   Select,
   SelectContent,
@@ -22,7 +27,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 
 import { taskFormSchema, TaskFormValues } from "../task-schema";
@@ -51,7 +60,11 @@ interface AddTaskModalProps {
   onSubmit?: (values: TaskFormValues) => void;
 }
 
-export function AddTaskModal({ open, onOpenChange, onSubmit }: AddTaskModalProps) {
+export function AddTaskModal({
+  open,
+  onOpenChange,
+  onSubmit,
+}: AddTaskModalProps) {
   const form = useForm<TaskFormValues>({
     resolver: zodResolver(taskFormSchema),
     defaultValues: {
@@ -96,7 +109,9 @@ export function AddTaskModal({ open, onOpenChange, onSubmit }: AddTaskModalProps
                     autoComplete="off"
                     className="rounded-sm"
                   />
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -121,7 +136,9 @@ export function AddTaskModal({ open, onOpenChange, onSubmit }: AddTaskModalProps
                       <SelectItem value="High">High</SelectItem>
                     </SelectContent>
                   </Select>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -165,7 +182,9 @@ export function AddTaskModal({ open, onOpenChange, onSubmit }: AddTaskModalProps
                       />
                     </PopoverContent>
                   </Popover>
-                  {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
                 </Field>
               )}
             />
@@ -173,7 +192,11 @@ export function AddTaskModal({ open, onOpenChange, onSubmit }: AddTaskModalProps
         </form>
 
         <DialogFooter className="pt-2 bg-transparent border-0">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
             Cancel
           </Button>
           <Button

@@ -6,12 +6,14 @@ import { Task, taskColumns } from "./columns";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { ClipboardList, Plus, Trash2 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { tabTriggerClass } from "./types";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { AddTaskModal } from "./modals/add-task-modal";
+import { toast } from "@/components/ui/toast";
+import { ConfirmationDialog } from "@/components/confirmation-dialog";
 
 const tasks: Task[] = [
   {
@@ -62,8 +64,32 @@ const tasks: Task[] = [
 
 const TasksPage = () => {
   const router = useRouter();
+  const [openDelete, setOpenDelete] = useState(false);
 
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
+
+  const handleMarkComplete = (id: string) => {
+    console.log(id);
+    toast.promise(new Promise((resolve) => setTimeout(resolve, 2000)), {
+      loading: "Marking task as complete...",
+      success: "Task marked as complete!",
+      error: "Failed to mark task as complete.",
+    });
+  };
+
+  const handleDelete = () => {
+    setOpenDelete(false);
+    toast.promise(new Promise((resolve) => setTimeout(resolve, 2000)), {
+      loading: "Deleting task...",
+      success: "Task deleted!",
+      error: "Failed to delete task.",
+    });
+  };
+
+  const onDeleteTask = (id: string) => {
+    console.log("Delete task with id:", id);
+    setOpenDelete(true);
+  };
 
   return (
     <div className="space-y-6 p-6">
@@ -74,25 +100,37 @@ const TasksPage = () => {
           <TabsList className="h-10 w-full md:w-auto gap-1 rounded-sm bg-muted p-1 dark:bg-zinc-900">
             <TabsTrigger
               value="all"
-              className={cn(tabTriggerClass, "flex-1 rounded-md cursor-pointer md:flex-none")}
+              className={cn(
+                tabTriggerClass,
+                "flex-1 rounded-md cursor-pointer md:flex-none",
+              )}
             >
               All
             </TabsTrigger>
             <TabsTrigger
               value="today"
-              className={cn(tabTriggerClass, "flex-1 rounded-md cursor-pointer md:flex-none")}
+              className={cn(
+                tabTriggerClass,
+                "flex-1 rounded-md cursor-pointer md:flex-none",
+              )}
             >
               Today
             </TabsTrigger>
             <TabsTrigger
               value="upcoming"
-              className={cn(tabTriggerClass, "flex-1 rounded-md cursor-pointer md:flex-none")}
+              className={cn(
+                tabTriggerClass,
+                "flex-1 rounded-md cursor-pointer md:flex-none",
+              )}
             >
               Upcoming
             </TabsTrigger>
             <TabsTrigger
               value="completed"
-              className={cn(tabTriggerClass, "flex-1 rounded-md cursor-pointer md:flex-none")}
+              className={cn(
+                tabTriggerClass,
+                "flex-1 rounded-md cursor-pointer md:flex-none",
+              )}
             >
               Completed
             </TabsTrigger>
@@ -111,7 +149,10 @@ const TasksPage = () => {
 
       <div className="space-y-6">
         <DataTable
-          columns={taskColumns}
+          columns={taskColumns({
+            onMarkComplete: handleMarkComplete,
+            onDeleteTask: onDeleteTask,
+          })}
           data={tasks}
           getRowId={(task) => task.id}
           enableRowSelection
@@ -126,6 +167,28 @@ const TasksPage = () => {
       <AddTaskModal
         open={isAddTaskModalOpen}
         onOpenChange={setIsAddTaskModalOpen}
+        onSubmit={() => {
+          toast.add({
+            title: "Task added",
+            description: "Your new task has been added.",
+          });
+        }}
+      />
+
+      <ConfirmationDialog
+        open={openDelete}
+        onOpenChange={setOpenDelete}
+        intent="destructive"
+        title="Delete this task?"
+        description="This action cannot be undone."
+        icon={Trash2}
+        itemIcon={ClipboardList}
+        // itemTitle="Grocery shopping"
+        // itemSubtitle="Tomorrow • Personal"
+        confirmText="Delete"
+        confirmVariant="destructive"
+        onConfirm={handleDelete}
+        onCancel={() => setOpenDelete(false)}
       />
     </div>
   );

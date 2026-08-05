@@ -38,7 +38,15 @@ const priorityRank: Record<TaskPriority, number> = {
   Low: 2,
 };
 
-export const taskColumns: DataTableColumn<Task>[] = [
+type taskColumnsProps = {
+  onMarkComplete: (id: string) => void;
+  onDeleteTask: (id: string) => void;
+};
+
+export const taskColumns = ({
+  onMarkComplete,
+  onDeleteTask,
+}: taskColumnsProps): DataTableColumn<Task>[] => [
   {
     id: "title",
     header: "Task",
@@ -100,7 +108,7 @@ export const taskColumns: DataTableColumn<Task>[] = [
     id: "actions",
     header: "",
     width: "40px",
-    cell: () => (
+    cell: (row) => (
       <DropdownMenu>
         <DropdownMenuTrigger>
           <Button
@@ -114,8 +122,13 @@ export const taskColumns: DataTableColumn<Task>[] = [
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
           <DropdownMenuItem>Edit</DropdownMenuItem>
-          <DropdownMenuItem>Duplicate</DropdownMenuItem>
-          <DropdownMenuItem className="text-destructive">
+          <DropdownMenuItem onClick={() => onMarkComplete(row.id)}>
+            Mark as Complete
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => onDeleteTask(row.id)}
+            className="text-destructive"
+          >
             Delete
           </DropdownMenuItem>
         </DropdownMenuContent>

@@ -14,11 +14,9 @@ export const taskFormSchema = z.object({
     message: "Priority is required",
   }),
 
-  dueDate: z
-    .date()
-    .refine((date) => date >= today, {
-      message: "Due date cannot be in the past",
-    }),
+  dueDate: z.date().refine((date) => date >= today, {
+    message: "Due date cannot be in the past",
+  }),
 });
 
 export type TaskFormValues = z.infer<typeof taskFormSchema>;
