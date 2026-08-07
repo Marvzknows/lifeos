@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import { VersionSwitcher } from "@/components/version-switcher";
 import {
@@ -25,14 +27,14 @@ import {
   CreditCard,
 } from "lucide-react";
 import { ModeToggle } from "./mode-toggle";
+import { usePathname } from "next/navigation";
 
 // This is sample data.
 const data = {
   navItems: [
     {
       title: "Dashboard",
-      url: "#",
-      isActive: true,
+      url: "/dashboard",
       icon: LayoutDashboard,
     },
   ],
@@ -41,11 +43,11 @@ const data = {
     {
       title: "PRODUCTIVITY",
       items: [
-        { title: "Tasks", url: "#", isActive: false, icon: CheckSquare },
-        { title: "Calendar", url: "#", isActive: false, icon: Calendar },
-        { title: "Notes", url: "#", isActive: false, icon: NotebookText },
-        { title: "Goals", url: "#", isActive: false, icon: Target },
-        { title: "Journal", url: "#", isActive: false, icon: BookOpen },
+        { title: "Tasks", url: "/tasks", icon: CheckSquare },
+        { title: "Calendar", url: "#", icon: Calendar },
+        { title: "Notes", url: "/notes", icon: NotebookText },
+        { title: "Goals", url: "#", icon: Target },
+        { title: "Journal", url: "/journal", icon: BookOpen },
       ],
     },
     {
@@ -54,18 +56,20 @@ const data = {
         {
           title: "Transactions",
           url: "#",
-          isActive: false,
+
           icon: ArrowLeftRight,
         },
-        { title: "Budget", url: "#", isActive: false, icon: Wallet },
-        { title: "Bills", url: "#", isActive: false, icon: Receipt },
-        { title: "Subscriptions", url: "#", isActive: false, icon: CreditCard },
+        { title: "Budget", url: "#", icon: Wallet },
+        { title: "Bills", url: "#", icon: Receipt },
+        { title: "Subscriptions", url: "#", icon: CreditCard },
       ],
     },
   ],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const pathname = usePathname();
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
@@ -82,7 +86,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               {data.navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
-                    isActive={item.isActive}
+                    isActive={pathname === item.url}
                     render={<a href={item.url} />}
                   >
                     <item.icon />
@@ -104,7 +108,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 {group.items.map((item) => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
-                      isActive={item.isActive}
+                      isActive={pathname === item.url}
                       render={<a href={item.url} />}
                     >
                       <item.icon />
