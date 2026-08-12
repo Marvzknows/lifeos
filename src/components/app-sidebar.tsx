@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { ModeToggle } from "./mode-toggle";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 
 // This is sample data.
 const data = {
@@ -87,7 +88,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     isActive={pathname === item.url}
-                    render={<a href={item.url} />}
+                    render={<Link href={item.url} />}
                   >
                     <item.icon />
                     <span>{item.title}</span>
@@ -109,7 +110,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       isActive={pathname === item.url}
-                      render={<a href={item.url} />}
+                      render={<Link href={item.url} />}
                     >
                       <item.icon />
                       <span>{item.title}</span>

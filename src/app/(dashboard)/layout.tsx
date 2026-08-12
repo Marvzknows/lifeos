@@ -1,3 +1,5 @@
+"use client";
+
 import { AppSidebar } from "@/components/app-sidebar";
 import ProfileDropdown from "@/components/profile-dropdown";
 import { Separator } from "@/components/ui/separator";
@@ -14,12 +16,20 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { useAuth } from "@/context/auth-context";
+import { FullPageLoader } from "@/components/full-page-loader";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { isLoading } = useAuth();
+
+  if (isLoading) {
+    return <FullPageLoader />;
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />
