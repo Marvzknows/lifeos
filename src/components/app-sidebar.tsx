@@ -26,7 +26,6 @@ import {
   Receipt,
   CreditCard,
 } from "lucide-react";
-import { ModeToggle } from "./mode-toggle";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 
@@ -76,7 +75,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <div className="flex items-center justify-between">
           <VersionSwitcher />
-          <ModeToggle />
         </div>
       </SidebarHeader>
       <SidebarContent>

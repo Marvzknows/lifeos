@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { useAuth } from "@/context/auth-context";
 import { FullPageLoader } from "@/components/full-page-loader";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export default function DashboardLayout({
   children,
@@ -55,7 +56,10 @@ export default function DashboardLayout({
               </BreadcrumbList>
             </Breadcrumb>
           </div>
-          <ProfileDropdown />
+          <div className="flex items-center gap-2">
+            <ModeToggle />
+            <ProfileDropdown />
+          </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
       </SidebarInset>

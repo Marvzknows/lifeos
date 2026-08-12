@@ -13,9 +13,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import useLogout from "@/hooks/auth/use-logout";
+import { useAuth } from "@/context/auth-context";
 
 const ProfileDropdown = () => {
   const { isLoggingOut, handleLogout } = useLogout();
+  const { user } = useAuth();
 
   return (
     <DropdownMenu disabled={isLoggingOut}>
@@ -27,7 +29,7 @@ const ProfileDropdown = () => {
         <Avatar>
           <AvatarImage
             alt="@haydenbleasel"
-            src="https://github.com/haydenbleasel.png"
+            src={user?.avatarUrl || "https://github.com/haydenbleasel.png"}
           />
           <AvatarFallback>HB</AvatarFallback>
         </Avatar>
@@ -36,9 +38,9 @@ const ProfileDropdown = () => {
         <DropdownMenuGroup>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
-              <p className="font-medium text-sm leading-none">Hayden Bleasel</p>
+              <p className="font-medium text-sm leading-none">{user?.name}</p>
               <p className="text-muted-foreground text-xs leading-none">
-                hello@haydenbleasel.com
+                {user?.email}
               </p>
             </div>
           </DropdownMenuLabel>
