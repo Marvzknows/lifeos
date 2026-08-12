@@ -25,3 +25,18 @@ export class QuotaExceededError extends AppError {
     super(message, 429); // 429 = Too Many Requests, the correct status for quota/rate limits
   }
 }
+
+// SAMPLE USAGE
+// export async function deleteTask(userId: string, taskId: string) {
+//   const task = await prisma.task.findUnique({ where: { id: taskId } });
+
+//   if (!task) {
+//     throw new NotFoundError("Task not found");
+//   }
+
+//   if (task.authorId !== userId) {
+//     throw new ForbiddenError("You can't delete someone else's task");
+//   }
+
+//   await prisma.task.delete({ where: { id: taskId } });
+// }
