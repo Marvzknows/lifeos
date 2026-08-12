@@ -202,7 +202,7 @@ export function AddTaskModal({
           <Button
             type="submit"
             form="add-task-form"
-            className="bg-indigo-600 hover:bg-indigo-500"
+            className="dark:text-white bg-indigo-600 hover:bg-indigo-500"
           >
             Create Task
           </Button>
