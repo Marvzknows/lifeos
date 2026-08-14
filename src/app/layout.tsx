@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import NextTopLoader from "nextjs-toploader";
 import { Toaster } from "@/components/ui/toast";
 import { AuthProvider } from "@/context/auth-context";
+import ReactQueryProvider from "./providers/ReactQueryProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,9 +39,11 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <NextTopLoader />
-            <Toaster />
-            {children}
+            <ReactQueryProvider>
+              <NextTopLoader />
+              <Toaster />
+              {children}
+            </ReactQueryProvider>
           </ThemeProvider>
         </AuthProvider>
       </body>
