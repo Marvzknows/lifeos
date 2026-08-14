@@ -1,24 +1,13 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { createContext, useContext, useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
-
-type AuthUser = {
-  id: string;
-  email: string;
-  name: string | null;
-  avatarUrl: string | null;
-  role: "USER" | "ADMIN";
-} | null;
+import { AuthUser } from "@/lib/api/services/auth.services";
+import { authKeys, useMe } from "@/lib/api/services/hooks/auth.hooks";
 
 type AuthContextValue = {
-  user: AuthUser;
+  user: AuthUser | null;
   isLoading: boolean;
   refetchUser: () => Promise<void>;
 };
@@ -26,56 +15,53 @@ type AuthContextValue = {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const fetchUser = useCallback(async () => {
-    try {
-      const res = await fetch("/api/me");
-      const data = await res.json();
-      setUser(data.user);
-    } catch {
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const queryClient = useQueryClient();
+  const { data, isLoading, refetch } = useMe();
+  const lastUserId = useRef<string | null>(null);
 
   useEffect(() => {
-    let ignore = false;
+    lastUserId.current = data?.user?.id ?? null;
+  }, [data?.user?.id]);
 
-    async function loadUser() {
-      try {
-        const res = await fetch("/api/me");
-        const data = await res.json();
-        if (!ignore) setUser(data.user);
-      } catch {
-        if (!ignore) setUser(null);
-      } finally {
-        if (!ignore) setIsLoading(false);
-      }
-    }
-
-    loadUser();
-
+  useEffect(() => {
     const supabase = createClient();
-    const { data: subscription } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_OUT") {
-        setUser(null);
-      }
-      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-        loadUser();
-      }
-    });
+    const { data: subscription } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (event === "SIGNED_OUT") {
+          lastUserId.current = null;
+          queryClient.setQueryData(authKeys.me, { user: null });
+          return;
+        }
+
+        if (event === "SIGNED_IN") {
+          const newUserId = session?.user?.id ?? null;
+
+          // Supabase re-emits SIGNED_IN on tab refocus even when the
+          // session hasn't actually changed. Only refetch if the
+          // authenticated user is actually different.
+          if (newUserId !== lastUserId.current) {
+            queryClient.invalidateQueries({ queryKey: authKeys.me });
+          }
+          return;
+        }
+
+        // TOKEN_REFRESHED, etc. — no action needed
+      },
+    );
 
     return () => {
-      ignore = true;
       subscription.subscription.unsubscribe();
     };
-  }, []);
+  }, [queryClient]);
+
+  const refetchUser = async () => {
+    await refetch();
+  };
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, refetchUser: fetchUser }}>
+    <AuthContext.Provider
+      value={{ user: data?.user ?? null, isLoading, refetchUser }}
+    >
       {children}
     </AuthContext.Provider>
   );

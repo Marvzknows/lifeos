@@ -32,20 +32,20 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body>
-        <AuthProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <ReactQueryProvider>
+        <ReactQueryProvider>
+          <AuthProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
               <NextTopLoader />
               <Toaster />
               {children}
-            </ReactQueryProvider>
-          </ThemeProvider>
-        </AuthProvider>
+            </ThemeProvider>
+          </AuthProvider>
+        </ReactQueryProvider>
       </body>
     </html>
   );
