@@ -17,6 +17,11 @@ export const taskFormSchema = z.object({
   dueDate: z.date().refine((date) => date >= today, {
     message: "Due date cannot be in the past",
   }),
+
+  description: z
+    .string()
+    .max(2000, "Description must be under 2000 characters")
+    .optional(),
 });
 
 export type TaskFormValues = z.infer<typeof taskFormSchema>;

@@ -1,5 +1,5 @@
 import { handleApiError } from "@/lib/server/errors/handle-api-error";
-import { getCurrentUserId } from "@/lib/server/get-current-user-id";
+import { getCurrentUserId } from "@/lib/auth/get-current-user-id";
 import { createTask } from "@/lib/server/services/task-service";
 import { createTaskSchema } from "@/schemas/task-schema";
 import { NextRequest, NextResponse } from "next/server";
