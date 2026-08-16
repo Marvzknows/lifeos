@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import { useSidebar } from "@/components/ui/sidebar";
 
 // This is sample data.
 const data = {
@@ -69,6 +70,13 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  const handleNavigation = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   return (
     <Sidebar {...props}>
@@ -87,6 +95,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <SidebarMenuButton
                     isActive={pathname === item.url}
                     render={<Link href={item.url} />}
+                    onClick={handleNavigation}
                   >
                     <item.icon />
                     <span>{item.title}</span>
@@ -109,6 +118,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     <SidebarMenuButton
                       isActive={pathname === item.url}
                       render={<Link href={item.url} />}
+                      onClick={handleNavigation}
                     >
                       <item.icon />
                       <span>{item.title}</span>
