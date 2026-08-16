@@ -1,3 +1,5 @@
+"use client";
+
 import { AppSidebar } from "@/components/app-sidebar";
 import ProfileDropdown from "@/components/profile-dropdown";
 import { Separator } from "@/components/ui/separator";
@@ -14,12 +16,21 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
+import { useAuth } from "@/context/auth-context";
+import { FullPageLoader } from "@/components/full-page-loader";
+import { ModeToggle } from "@/components/mode-toggle";
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { isLoading } = useAuth();
+
+  if (isLoading) {
+    return <FullPageLoader />;
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -45,7 +56,10 @@ export default function DashboardLayout({
               </BreadcrumbList>
             </Breadcrumb>
           </div>
-          <ProfileDropdown />
+          <div className="flex items-center gap-2">
+            <ModeToggle />
+            <ProfileDropdown />
+          </div>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
       </SidebarInset>

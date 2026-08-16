@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader } from "../ui/card";
 
 export interface DataTableColumn<TData> {
   id: string;
@@ -41,6 +42,7 @@ export interface DataTableProps<TData> {
   className?: string;
   isLoading?: boolean;
   loadingRowCount?: number;
+  header?: React.ReactNode;
 }
 
 type SortDirection = "asc" | "desc";
@@ -56,6 +58,7 @@ export function DataTable<TData>({
   className,
   isLoading = false,
   loadingRowCount = 5,
+  header,
 }: DataTableProps<TData>) {
   const [sortId, setSortId] = React.useState<string | null>(null);
   const [sortDir, setSortDir] = React.useState<SortDirection>("asc");
@@ -128,8 +131,9 @@ export function DataTable<TData>({
   const someSelected = ids.some((id) => selected.has(id));
 
   return (
-    <div className={cn("space-y-4", className)}>
-      <div className="rounded-md border">
+    <Card className={cn("space-y-4", className)}>
+      <CardContent className="rounded-md p-0 space-y-3">
+        {header && <CardHeader className="border-b">{header}</CardHeader>}
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
@@ -234,7 +238,7 @@ export function DataTable<TData>({
             )}
           </TableBody>
         </Table>
-      </div>
+      </CardContent>
 
       {/* {!isLoading && (
         <div className="text-sm text-muted-foreground">
@@ -243,6 +247,6 @@ export function DataTable<TData>({
             : `${rows.length} row(s)`}
         </div>
       )} */}
-    </div>
+    </Card>
   );
 }
