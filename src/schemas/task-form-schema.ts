@@ -20,8 +20,12 @@ export const taskFormSchema = z.object({
 
   description: z
     .string()
+    .trim()
     .max(2000, "Description must be under 2000 characters")
-    .optional(),
+    .optional()
+    .refine((val) => !val || val.length >= 6, {
+      message: "Description must be at least 6 characters if provided",
+    }),
 });
 
 export type TaskFormValues = z.infer<typeof taskFormSchema>;

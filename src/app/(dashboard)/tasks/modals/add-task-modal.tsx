@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Field,
   FieldError,
@@ -70,6 +71,7 @@ export function AddTaskModal({
       title: "",
       priority: undefined,
       dueDate: undefined,
+      description: "",
     },
   });
 
@@ -181,6 +183,29 @@ export function AddTaskModal({
                       />
                     </PopoverContent>
                   </Popover>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="description"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="add-task-description">
+                    Description
+                  </FieldLabel>
+                  <Textarea
+                    {...field}
+                    id="add-task-description"
+                    aria-invalid={fieldState.invalid}
+                    placeholder="Add any extra details about this task..."
+                    className="rounded-sm resize-none"
+                    rows={4}
+                  />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}
