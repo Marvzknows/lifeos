@@ -34,7 +34,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { taskFormSchema, TaskFormValues } from "@/schemas/task-form-schema";
+import {
+  taskFormSchema,
+  TaskFormValues,
+} from "@/schemas/task/task-form-schema";
 
 function formatDatePPP(date: Date): string {
   const day = date.getDate();
