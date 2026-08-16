@@ -1,7 +1,18 @@
 import { NextResponse } from "next/server";
 import { AppError } from "./errors";
+import { ZodError, z } from "zod";
 
 export function handleApiError(error: unknown) {
+  if (error instanceof ZodError) {
+    return NextResponse.json(
+      {
+        error: "Validation failed",
+        details: z.flattenError(error).fieldErrors,
+      },
+      { status: 400 },
+    );
+  }
+
   if (error instanceof AppError) {
     return NextResponse.json(
       { error: error.message },
