@@ -9,45 +9,11 @@ type CreateTaskPayloadT = {
   dueDate?: Date;
 };
 
-// Create task
-export async function createTask(userId: string, data: CreateTaskPayloadT) {
-  return prisma.task.create({
-    data: { ...data, userId: userId },
-  });
-}
+type AssertTaskAccessT = {
+  userId: string;
+  taskId: string;
+};
 
-// Get task by ID
-export async function getTaskById(userId: string, id: string) {
-  const task = await prisma.task.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      title: true,
-      completed: true,
-      priority: true,
-      dueDate: true,
-      createdAt: true,
-      updatedAt: true,
-      user: {
-        select: {
-          id: true,
-          email: true,
-          name: true,
-        },
-      },
-    },
-  });
-
-  if (!task) throw new NotFoundError("Task not found");
-  if (task.user.id !== userId) {
-    throw new ForbiddenError("You don't have permission to view this task");
-  }
-
-  const { user, ...rest } = task;
-  return { ...rest, created_by: user.name };
-}
-
-// Get paginated tasks
 const taskSelect = {
   id: true,
   title: true,
@@ -58,6 +24,38 @@ const taskSelect = {
   updatedAt: true,
   description: true,
 };
+
+async function assertTaskAccess({ userId, taskId }: AssertTaskAccessT) {
+  const task = await prisma.task.findUnique({ where: { id: taskId } });
+
+  if (!task || task.deletedAt) throw new NotFoundError("Task not found");
+  if (task.userId !== userId) {
+    throw new ForbiddenError("You don't have permission to access this task");
+  }
+
+  return task;
+}
+
+export async function createTask(userId: string, data: CreateTaskPayloadT) {
+  return prisma.task.create({
+    data: { ...data, userId },
+  });
+}
+
+export async function getTaskById(userId: string, id: string) {
+  await assertTaskAccess({ userId, taskId: id });
+
+  const task = await prisma.task.findUnique({
+    where: { id },
+    select: {
+      ...taskSelect,
+      user: { select: { id: true, email: true, name: true } },
+    },
+  });
+
+  const { user, ...rest } = task!;
+  return { ...rest, created_by: user.name };
+}
 
 function buildFilterWhere(filter: TaskQueryParams["filter"]) {
   const startOfToday = new Date();
@@ -110,21 +108,12 @@ export async function getPaginatedTasks(
   return buildPaginatedResult(tasks, total, { page, limit });
 }
 
-// Update task
-export async function updateTask(
-  userId: string,
-  id: string,
-  data: Partial<CreateTaskPayloadT>,
-) {
-  return prisma.task.update({
-    where: { id, userId },
-    data,
-  });
-}
-
-// Delete task
 export async function deleteTask(userId: string, id: string) {
-  return prisma.task.delete({
-    where: { id, userId },
+  await assertTaskAccess({ userId, taskId: id });
+
+  return prisma.task.update({
+    where: { id },
+    data: { deletedAt: new Date() },
+    select: taskSelect,
   });
 }
