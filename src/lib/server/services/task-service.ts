@@ -83,12 +83,15 @@ export async function getPaginatedTasks(
   userId: string,
   query: TaskQueryParams,
 ) {
-  const { page, limit, priority, filter } = query;
+  const { page, limit, priority, filter, search } = query;
   const skip = (page - 1) * limit;
 
   const where = {
     userId,
     ...(priority && { priority }),
+    ...(search && {
+      title: { contains: search, mode: "insensitive" as const },
+    }),
     ...buildFilterWhere(filter),
   };
 
