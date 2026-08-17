@@ -131,7 +131,7 @@ export function DataTable<TData>({
   const someSelected = ids.some((id) => selected.has(id));
 
   return (
-    <Card className={cn("space-y-4", className)}>
+    <Card className={cn("space-y-4 rounded-sm", className)}>
       <CardContent className="rounded-md p-0 space-y-3">
         {header && <CardHeader className="border-b">{header}</CardHeader>}
         <Table>

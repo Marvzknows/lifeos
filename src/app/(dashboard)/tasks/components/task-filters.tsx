@@ -29,7 +29,7 @@ const TaskFilters = ({
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="grid grid-cols-2 gap-2.5 sm:flex sm:flex-row">
         <Select value={status} onValueChange={onStatusChange}>
-          <SelectTrigger className="w-full sm:w-45">
+          <SelectTrigger className="rounded w-full sm:w-45">
             <span className="text-muted-foreground">Status:</span>
             <SelectValue placeholder="All" />
           </SelectTrigger>
@@ -46,7 +46,7 @@ const TaskFilters = ({
         </Select>
 
         <Select value={priority} onValueChange={onPriorityChange}>
-          <SelectTrigger className="w-full sm:w-45">
+          <SelectTrigger className="rounded w-full sm:w-45">
             <span className="text-muted-foreground">Priority:</span>
             <SelectValue placeholder="All" />
           </SelectTrigger>
@@ -63,7 +63,7 @@ const TaskFilters = ({
       </div>
 
       <Button
-        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white sm:w-auto"
+        className="rounded w-full bg-indigo-600 hover:bg-indigo-500 text-white sm:w-auto"
         size="lg"
         onClick={onAddTask}
       >
