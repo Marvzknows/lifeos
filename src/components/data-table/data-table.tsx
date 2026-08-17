@@ -133,7 +133,9 @@ export function DataTable<TData>({
   return (
     <Card className={cn("space-y-4 rounded-sm", className)}>
       <CardContent className="rounded-md p-0 space-y-3">
-        {header && <CardHeader className="border-b">{header}</CardHeader>}
+        {header && (
+          <CardHeader className="border-b p-0 m-0">{header}</CardHeader>
+        )}
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
