@@ -10,8 +10,7 @@ import { useState } from "react";
 import { AddTaskModal } from "./modals/add-task-modal";
 import { toast } from "@/components/ui/toast";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
-import { TasksTableToolbar } from "./components/task-table-toolbar";
-import { TaskTab } from "./types";
+import TaskFilters from "./components/task-filters";
 
 const tasks: Task[] = [
   {
@@ -64,7 +63,8 @@ const TasksPage = () => {
   const router = useRouter();
   const [openDelete, setOpenDelete] = useState(false);
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<TaskTab>("all");
+  const [status, setStatus] = useState("all");
+  const [priority, setPriority] = useState("");
 
   const handleMarkComplete = (id: string) => {
     console.log(id);
@@ -89,13 +89,21 @@ const TasksPage = () => {
     setOpenDelete(true);
   };
 
+  const handleStatusChange = (value: string | null) => {
+    setStatus(value ?? "all");
+  };
+
+  const handlePriorityChange = (value: string | null) => {
+    setPriority(value ?? "");
+  };
+
   const filteredTasks = tasks.filter((task) => {
-    if (activeTab === "all") return true;
-    if (activeTab === "completed") return task.completed;
-    if (activeTab === "today") {
+    if (status === "all") return true;
+    if (status === "completed") return task.completed;
+    if (status === "today") {
       return !task.completed && task.dueDateLabel.startsWith("Today");
     }
-    if (activeTab === "upcoming") {
+    if (status === "upcoming") {
       return !task.completed && !task.dueDateLabel.startsWith("Today");
     }
     return true;
@@ -108,10 +116,12 @@ const TasksPage = () => {
       <div className="space-y-6">
         <DataTable
           header={
-            <TasksTableToolbar
-              value={activeTab}
-              onValueChange={setActiveTab}
+            <TaskFilters
               onAddTask={() => setIsAddTaskModalOpen(true)}
+              onStatusChange={handleStatusChange}
+              status={status}
+              onPriorityChange={handlePriorityChange}
+              priority={priority}
             />
           }
           columns={taskColumns({
