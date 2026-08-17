@@ -36,13 +36,14 @@ model User {
 }
 
 model Task {
-  id        String       @id @default(uuid()) @db.Uuid
-  title     String
-  completed Boolean      @default(false)
-  priority  TaskPriority @default(MEDIUM)
-  dueDate   DateTime?
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  id          String       @id @default(uuid()) @db.Uuid
+  title       String
+  description String?
+  completed   Boolean      @default(false)
+  priority    TaskPriority @default(MEDIUM)
+  dueDate     DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   userId String @db.Uuid
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)

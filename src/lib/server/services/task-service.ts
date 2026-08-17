@@ -5,6 +5,7 @@ import { buildPaginatedResult } from "./pagination";
 
 type CreateTaskPayloadT = {
   title: string;
+  description?: string;
   dueDate?: Date;
 };
 
@@ -55,6 +56,7 @@ const taskSelect = {
   dueDate: true,
   createdAt: true,
   updatedAt: true,
+  description: true,
 };
 
 function buildFilterWhere(filter: TaskQueryParams["filter"]) {
