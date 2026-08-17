@@ -88,6 +88,7 @@ export async function getPaginatedTasks(
 
   const where = {
     userId,
+    deletedAt: null,
     ...(priority && { priority }),
     ...(search && {
       title: { contains: search, mode: "insensitive" as const },
