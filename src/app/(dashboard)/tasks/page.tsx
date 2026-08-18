@@ -66,6 +66,7 @@ const TasksPage = () => {
   const [status, setStatus] = useState("all");
   const [priority, setPriority] = useState("");
 
+  // #region Handlers
   const handleMarkComplete = (id: string) => {
     console.log(id);
     toast.promise(new Promise((resolve) => setTimeout(resolve, 2000)), {
@@ -96,6 +97,7 @@ const TasksPage = () => {
   const handlePriorityChange = (value: string | null) => {
     setPriority(value ?? "");
   };
+  // #endregion Handlers
 
   const filteredTasks = tasks.filter((task) => {
     if (status === "all") return true;
