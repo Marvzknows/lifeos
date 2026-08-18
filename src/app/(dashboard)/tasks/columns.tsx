@@ -11,42 +11,43 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { DataTableColumn } from "@/components/data-table/data-table";
-
-export type TaskPriority = "Low" | "Medium" | "High";
-
-export interface Task {
-  id: string;
-  title: string;
-  tags: string[];
-  priority: TaskPriority;
-  dueDate: string; // ISO string, used for sorting
-  dueDateLabel: string; // formatted, used for display
-  project: string;
-  projectColor: string; // tailwind text color class, e.g. "text-indigo-500"
-  completed: boolean;
-}
+import { Task, TaskPriority } from "@/app/types/task";
 
 const priorityDotColor: Record<TaskPriority, string> = {
-  High: "bg-red-500",
-  Medium: "bg-orange-500",
-  Low: "bg-blue-500",
+  HIGH: "bg-red-500",
+  MEDIUM: "bg-orange-500",
+  LOW: "bg-blue-500",
 };
 
 const priorityRank: Record<TaskPriority, number> = {
-  High: 0,
-  Medium: 1,
-  Low: 2,
+  HIGH: 0,
+  MEDIUM: 1,
+  LOW: 2,
 };
 
-type taskColumnsProps = {
+type TaskColumnsProps = {
   onMarkComplete: (id: string) => void;
   onDeleteTask: (id: string) => void;
+};
+
+const formatDueDate = (dueDate: string | null) => {
+  if (!dueDate) {
+    return "No due date";
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(dueDate));
 };
 
 export const taskColumns = ({
   onMarkComplete,
   onDeleteTask,
-}: taskColumnsProps): DataTableColumn<Task>[] => [
+}: TaskColumnsProps): DataTableColumn<Task>[] => [
   {
     id: "title",
     header: "Task",
@@ -55,20 +56,16 @@ export const taskColumns = ({
     cell: (row) => (
       <div className="space-y-1.5">
         <p className="font-medium leading-none">{row.title}</p>
-        <div className="flex gap-1.5">
-          {row.tags.map((tag) => (
-            <Badge
-              key={tag}
-              variant="secondary"
-              className="rounded-full font-normal"
-            >
-              {tag}
-            </Badge>
-          ))}
-        </div>
+
+        {row.description && (
+          <p className="line-clamp-1 text-sm text-muted-foreground">
+            {row.description}
+          </p>
+        )}
       </div>
     ),
   },
+
   {
     id: "priority",
     header: "Priority",
@@ -79,31 +76,39 @@ export const taskColumns = ({
         <span
           className={`h-2 w-2 rounded-full ${priorityDotColor[row.priority]}`}
         />
+
         <span>{row.priority}</span>
       </div>
     ),
   },
+
   {
     id: "dueDate",
     header: "Due Date",
     sortable: true,
-    sortAccessor: (row) => row.dueDate,
+    sortAccessor: (row) => (row.dueDate ? new Date(row.dueDate) : ""),
     cell: (row) => (
-      <span className="text-muted-foreground">{row.dueDateLabel}</span>
+      <span className="text-muted-foreground">
+        {formatDueDate(row.dueDate)}
+      </span>
     ),
   },
+
   {
-    id: "project",
-    header: "Project",
+    id: "status",
+    header: "Status",
     sortable: true,
-    sortAccessor: (row) => row.project,
+    sortAccessor: (row) => (row.completed ? 1 : 0),
     cell: (row) => (
-      <div className="flex items-center gap-1.5">
-        <span className={`text-xs ${row.projectColor}`}>●</span>
-        <span>{row.project}</span>
-      </div>
+      <Badge
+        variant={row.completed ? "secondary" : "outline"}
+        className="rounded-full"
+      >
+        {row.completed ? "Completed" : "Pending"}
+      </Badge>
     ),
   },
+
   {
     id: "actions",
     header: "",
@@ -120,11 +125,16 @@ export const taskColumns = ({
             <MoreVertical className="h-4 w-4" />
           </Button>
         </DropdownMenuTrigger>
+
         <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
           <DropdownMenuItem>Edit</DropdownMenuItem>
-          <DropdownMenuItem onClick={() => onMarkComplete(row.id)}>
-            Mark as Complete
-          </DropdownMenuItem>
+
+          {!row.completed && (
+            <DropdownMenuItem onClick={() => onMarkComplete(row.id)}>
+              Mark as Complete
+            </DropdownMenuItem>
+          )}
+
           <DropdownMenuItem
             onClick={() => onDeleteTask(row.id)}
             className="text-destructive"

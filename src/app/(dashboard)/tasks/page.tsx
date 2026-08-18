@@ -2,7 +2,7 @@
 
 import { TaskStats } from "@/components/tasks/task-stats";
 import { useRouter } from "next/navigation";
-import { Task, taskColumns } from "./columns";
+import { taskColumns } from "./columns";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { ClipboardList, Trash2 } from "lucide-react";
@@ -11,64 +11,34 @@ import { AddTaskModal } from "./modals/add-task-modal";
 import { toast } from "@/components/ui/toast";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import TaskFilters from "./components/task-filters";
+import { useTasks } from "@/lib/api/services/hooks/tasks.hooks";
+import { TaskPriority, TaskStatus } from "@/app/types/task";
 
-const tasks: Task[] = [
-  {
-    id: "1",
-    title: "Finish dashboard redesign",
-    tags: ["LifeOS", "Design"],
-    priority: "High",
-    dueDate: "2026-07-25T17:00:00",
-    dueDateLabel: "Today, 5:00 PM",
-    project: "LifeOS",
-    projectColor: "text-indigo-500",
-    completed: false,
-  },
-  {
-    id: "2",
-    title: "Review pull request #142",
-    tags: ["Work", "Development"],
-    priority: "Medium",
-    dueDate: "2026-07-25T15:00:00",
-    dueDateLabel: "Today, 3:00 PM",
-    project: "Work",
-    projectColor: "text-blue-500",
-    completed: true,
-  },
-  {
-    id: "3",
-    title: "Grocery shopping",
-    tags: ["Personal", "Errand"],
-    priority: "Medium",
-    dueDate: "2026-07-26T00:00:00",
-    dueDateLabel: "Tomorrow",
-    project: "Personal",
-    projectColor: "text-green-500",
-    completed: false,
-  },
-  {
-    id: "4",
-    title: "Write project documentation",
-    tags: ["LifeOS", "Documentation"],
-    priority: "Low",
-    dueDate: "2026-07-26T00:00:00",
-    dueDateLabel: "Tomorrow",
-    project: "LifeOS",
-    projectColor: "text-indigo-500",
-    completed: false,
-  },
-];
+const PAGE_SIZE = 10;
 
 const TasksPage = () => {
   const router = useRouter();
+
   const [openDelete, setOpenDelete] = useState(false);
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
-  const [status, setStatus] = useState("all");
-  const [priority, setPriority] = useState("");
+
+  const [status, setStatus] = useState<TaskStatus>("all");
+  const [priority, setPriority] = useState<TaskPriority | "">("");
+
+  const [page, setPage] = useState(1);
+
+  const { data, isLoading, isFetching } = useTasks({
+    page,
+    limit: PAGE_SIZE,
+    filter: status,
+    ...(priority && { priority }),
+  });
 
   // #region Handlers
+
   const handleMarkComplete = (id: string) => {
     console.log(id);
+
     toast.promise(new Promise((resolve) => setTimeout(resolve, 2000)), {
       loading: "Marking task as complete...",
       success: "Task marked as complete!",
@@ -78,6 +48,7 @@ const TasksPage = () => {
 
   const handleDelete = () => {
     setOpenDelete(false);
+
     toast.promise(new Promise((resolve) => setTimeout(resolve, 2000)), {
       loading: "Deleting task...",
       success: "Task deleted!",
@@ -91,25 +62,19 @@ const TasksPage = () => {
   };
 
   const handleStatusChange = (value: string | null) => {
-    setStatus(value ?? "all");
+    setStatus((value ?? "all") as TaskStatus);
+    setPage(1);
   };
 
   const handlePriorityChange = (value: string | null) => {
-    setPriority(value ?? "");
+    setPriority((value ?? "") as TaskPriority | "");
   };
-  // #endregion Handlers
 
-  const filteredTasks = tasks.filter((task) => {
-    if (status === "all") return true;
-    if (status === "completed") return task.completed;
-    if (status === "today") {
-      return !task.completed && task.dueDateLabel.startsWith("Today");
-    }
-    if (status === "upcoming") {
-      return !task.completed && !task.dueDateLabel.startsWith("Today");
-    }
-    return true;
-  });
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  // #endregion Handlers
 
   return (
     <div className="space-y-6 p-6">
@@ -130,14 +95,19 @@ const TasksPage = () => {
             onMarkComplete: handleMarkComplete,
             onDeleteTask: onDeleteTask,
           })}
-          data={filteredTasks}
+          data={data?.data ?? []}
           getRowId={(task) => task.id}
           enableRowSelection
           onRowSelectionChange={(rows) => console.log("selected:", rows)}
           onRowClick={(task) => router.push(`/tasks/${task.id}`)}
-          isLoading={false}
+          isLoading={isLoading || isFetching}
         />
-        <DataTablePagination page={2} pageCount={20} onPageChange={() => {}} />
+
+        <DataTablePagination
+          page={data?.pagination?.page ?? 1}
+          pageCount={data?.pagination?.totalPages ?? 0}
+          onPageChange={handlePageChange}
+        />
       </div>
 
       {/* Modals */}
