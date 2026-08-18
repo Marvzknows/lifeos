@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { ForbiddenError, NotFoundError } from "../errors/errors";
 import { TaskQueryParams } from "@/schemas/task/task-query-schema";
 import { buildPaginatedResult } from "./pagination";
+import { UpdateTaskPayloadT } from "@/schemas/task/task-schema";
 
 type CreateTaskPayloadT = {
   title: string;
@@ -12,6 +13,7 @@ type CreateTaskPayloadT = {
 type AssertTaskAccessT = {
   userId: string;
   taskId: string;
+  allowDeleted?: boolean;
 };
 
 const taskSelect = {
@@ -25,10 +27,16 @@ const taskSelect = {
   description: true,
 };
 
-async function assertTaskAccess({ userId, taskId }: AssertTaskAccessT) {
+async function assertTaskAccess({
+  userId,
+  taskId,
+  allowDeleted,
+}: AssertTaskAccessT) {
   const task = await prisma.task.findUnique({ where: { id: taskId } });
 
-  if (!task || task.deletedAt) throw new NotFoundError("Task not found");
+  if (!task) throw new NotFoundError("Task not found");
+  if (!allowDeleted && task.deletedAt)
+    throw new NotFoundError("Task not found");
   if (task.userId !== userId) {
     throw new ForbiddenError("You don't have permission to access this task");
   }
@@ -111,7 +119,7 @@ export async function getPaginatedTasks(
 export async function updateTask(
   userId: string,
   id: string,
-  data: Partial<CreateTaskPayloadT>,
+  data: UpdateTaskPayloadT,
 ) {
   await assertTaskAccess({ userId, taskId: id });
 
@@ -133,7 +141,7 @@ export async function softDeleteTask(userId: string, id: string) {
 }
 
 export async function restoreTask(userId: string, id: string) {
-  await assertTaskAccess({ userId, taskId: id });
+  await assertTaskAccess({ userId, taskId: id, allowDeleted: true });
 
   return prisma.task.update({
     where: { id },
