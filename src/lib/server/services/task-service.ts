@@ -108,12 +108,36 @@ export async function getPaginatedTasks(
   return buildPaginatedResult(tasks, total, { page, limit });
 }
 
-export async function deleteTask(userId: string, id: string) {
+export async function updateTask(
+  userId: string,
+  id: string,
+  data: Partial<CreateTaskPayloadT>,
+) {
+  await assertTaskAccess({ userId, taskId: id });
+
+  return prisma.task.update({
+    where: { id },
+    data,
+    select: taskSelect,
+  });
+}
+
+export async function softDeleteTask(userId: string, id: string) {
   await assertTaskAccess({ userId, taskId: id });
 
   return prisma.task.update({
     where: { id },
     data: { deletedAt: new Date() },
+    select: taskSelect,
+  });
+}
+
+export async function restoreTask(userId: string, id: string) {
+  await assertTaskAccess({ userId, taskId: id });
+
+  return prisma.task.update({
+    where: { id },
+    data: { deletedAt: null },
     select: taskSelect,
   });
 }
