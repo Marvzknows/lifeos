@@ -1,1 +1,167 @@
-// export const use
+import {
+  GetTasksParamsT,
+  PaginatedTasksResponseT,
+  TaskResponseT,
+} from "@/app/types/task";
+import { TaskFormValues } from "@/schemas/task/task-form-schema";
+import { UpdateTaskPayloadT } from "@/schemas/task/task-schema";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ApiError } from "../../axios";
+import taskService from "../tasks.services";
+import { toast } from "@/components/ui/toast";
+
+export const taskKeys = {
+  all: ["tasks"] as const,
+
+  lists: () => [...taskKeys.all, "list"] as const,
+
+  list: (params?: GetTasksParamsT) => [...taskKeys.lists(), params] as const,
+
+  details: () => [...taskKeys.all, "detail"] as const,
+
+  detail: (id: string) => [...taskKeys.details(), id] as const,
+};
+
+// Get all tasks
+export const useTasks = (params?: GetTasksParamsT) => {
+  return useQuery<PaginatedTasksResponseT, ApiError>({
+    queryKey: taskKeys.list(params),
+    queryFn: () => taskService.getAll(params),
+  });
+};
+
+// Get task by ID
+export const useTask = (id: string) => {
+  return useQuery<TaskResponseT, ApiError>({
+    queryKey: taskKeys.detail(id),
+    queryFn: () => taskService.getById(id),
+    enabled: !!id,
+  });
+};
+
+// Create task
+export const useCreateTask = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<TaskResponseT, ApiError, TaskFormValues>({
+    mutationFn: (data) => taskService.create(data),
+
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: taskKeys.all,
+      });
+
+      toast.add({
+        title: "Task created",
+        description: "Your task has been created successfully.",
+      });
+    },
+
+    onError: (error) => {
+      toast.add({
+        title: "Failed to create task",
+        description: error.message || "Something went wrong.",
+      });
+    },
+  });
+};
+
+// Update task
+export const useUpdateTask = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    TaskResponseT,
+    ApiError,
+    {
+      id: string;
+      data: UpdateTaskPayloadT;
+    }
+  >({
+    mutationFn: ({ id, data }) => taskService.update(id, data),
+
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: taskKeys.all,
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: taskKeys.detail(variables.id),
+      });
+
+      toast.add({
+        title: "Task updated",
+        description: "Your task has been updated successfully.",
+      });
+    },
+
+    onError: (error) => {
+      toast.add({
+        title: "Failed to update task",
+        description: error.message || "Something went wrong.",
+      });
+    },
+  });
+};
+
+// Delete task
+export const useDeleteTask = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<TaskResponseT, ApiError, string>({
+    mutationFn: (id) => taskService.delete(id),
+
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({
+        queryKey: taskKeys.all,
+      });
+
+      queryClient.removeQueries({
+        queryKey: taskKeys.detail(id),
+      });
+
+      toast.add({
+        title: "Task deleted",
+        description: "Your task has been deleted successfully.",
+      });
+    },
+
+    onError: (error) => {
+      toast.add({
+        title: "Failed to delete task",
+        description: error.message || "Something went wrong.",
+      });
+    },
+  });
+};
+
+// Restore task
+export const useRestoreTask = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<TaskResponseT, ApiError, string>({
+    mutationFn: (id) => taskService.restore(id),
+
+    onSuccess: (_, id) => {
+      queryClient.invalidateQueries({
+        queryKey: taskKeys.all,
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: taskKeys.detail(id),
+      });
+
+      toast.add({
+        title: "Task restored",
+        description: "Your task has been restored successfully.",
+      });
+    },
+
+    onError: (error) => {
+      toast.add({
+        title: "Failed to restore task",
+        description: error.message || "Something went wrong.",
+      });
+    },
+  });
+};
