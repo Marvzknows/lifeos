@@ -9,7 +9,7 @@ export type TaskStatusFilter = {
 };
 
 export type TaskPriorityFilter = {
-  value: "LOW" | "MEDIUM" | "HIGH";
+  value: "LOW" | "MEDIUM" | "HIGH" | undefined;
   label: string;
 };
 
@@ -33,6 +33,10 @@ export const taskStatusFilterOptions: TaskStatusFilter[] = [
 ];
 
 export const taskPriorityFilterOptions: TaskPriorityFilter[] = [
+  {
+    value: undefined,
+    label: "All",
+  },
   {
     value: "LOW",
     label: "Low",

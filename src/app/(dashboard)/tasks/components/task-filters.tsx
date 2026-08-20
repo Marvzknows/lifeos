@@ -10,6 +10,7 @@ import { taskPriorityFilterOptions, taskStatusFilterOptions } from "../types";
 import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { capitalizeWords } from "@/helpers/capitalize-words";
 
 type Props = {
   onAddTask: () => void;
@@ -66,7 +67,7 @@ const TaskFilters = ({
         <Select value={status} onValueChange={onStatusChange}>
           <SelectTrigger className="h-9 w-full rounded-md bg-background sm:w-45">
             <span className="text-muted-foreground">Status:</span>
-            <SelectValue placeholder="All" />
+            <SelectValue>{capitalizeWords(status)}</SelectValue>
           </SelectTrigger>
 
           <SelectContent>
@@ -83,7 +84,11 @@ const TaskFilters = ({
         <Select value={priority} onValueChange={onPriorityChange}>
           <SelectTrigger className="h-9 w-full rounded-md bg-background sm:w-45">
             <span className="text-muted-foreground">Priority:</span>
-            <SelectValue placeholder="All" />
+            {priority ? (
+              <SelectValue>{capitalizeWords(priority)}</SelectValue>
+            ) : (
+              <SelectValue placeholder="All" />
+            )}
           </SelectTrigger>
 
           <SelectContent>
