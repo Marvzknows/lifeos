@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DataTableColumn } from "@/components/data-table/data-table";
 import { Task, TaskPriority } from "@/app/types/task";
+import { capitalizeWords } from "@/helpers/capitalize-words";
 
 const priorityDotColor: Record<TaskPriority, string> = {
   HIGH: "bg-red-500",
@@ -28,6 +29,13 @@ const priorityRank: Record<TaskPriority, number> = {
 type TaskColumnsProps = {
   onMarkComplete: (id: string) => void;
   onDeleteTask: (id: string) => void;
+};
+
+const statusBadgeColor: Record<"completed" | "pending", string> = {
+  completed:
+    "border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-400",
+  pending:
+    "border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-400",
 };
 
 const formatDueDate = (dueDate: string | null) => {
@@ -77,7 +85,7 @@ export const taskColumns = ({
           className={`h-2 w-2 rounded-full ${priorityDotColor[row.priority]}`}
         />
 
-        <span>{row.priority}</span>
+        <span>{capitalizeWords(row.priority)}</span>
       </div>
     ),
   },
@@ -99,14 +107,18 @@ export const taskColumns = ({
     header: "Status",
     sortable: true,
     sortAccessor: (row) => (row.completed ? 1 : 0),
-    cell: (row) => (
-      <Badge
-        variant={row.completed ? "secondary" : "outline"}
-        className="rounded-full"
-      >
-        {row.completed ? "Completed" : "Pending"}
-      </Badge>
-    ),
+    cell: (row) => {
+      const status = row.completed ? "completed" : "pending";
+
+      return (
+        <Badge
+          variant="outline"
+          className={`rounded-sm ${statusBadgeColor[status]}`}
+        >
+          {row.completed ? "Completed" : "Pending"}
+        </Badge>
+      );
+    },
   },
 
   {

@@ -13,6 +13,7 @@ import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import TaskFilters from "./components/task-filters";
 import { useTasks } from "@/lib/api/services/hooks/tasks.hooks";
 import { TaskPriority, TaskStatus } from "@/app/types/task";
+import { useDebounce } from "@/hooks/use-debounce";
 
 const PAGE_SIZE = 10;
 
@@ -24,13 +25,15 @@ const TasksPage = () => {
 
   const [status, setStatus] = useState<TaskStatus>("all");
   const [priority, setPriority] = useState<TaskPriority | "">("");
-
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
 
+  const debouncedSearch = useDebounce(search);
   const { data, isLoading, isFetching } = useTasks({
     page,
     limit: PAGE_SIZE,
     filter: status,
+    ...(debouncedSearch && { search: debouncedSearch }),
     ...(priority && { priority }),
   });
 
@@ -70,6 +73,11 @@ const TasksPage = () => {
     setPriority((value ?? "") as TaskPriority | "");
   };
 
+  const handleSearchChange = (value: string | null) => {
+    setSearch(value ?? "");
+    setPage(1);
+  };
+
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
@@ -89,6 +97,8 @@ const TasksPage = () => {
               status={status}
               onPriorityChange={handlePriorityChange}
               priority={priority}
+              search={search}
+              onSearchChange={handleSearchChange}
             />
           }
           columns={taskColumns({

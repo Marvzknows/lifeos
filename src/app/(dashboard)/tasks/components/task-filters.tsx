@@ -18,6 +18,8 @@ type Props = {
   onStatusChange: (value: string | null) => void;
   priority: string;
   onPriorityChange: (value: string | null) => void;
+  search: string;
+  onSearchChange: (value: string | null) => void;
 };
 
 const TaskFilters = ({
@@ -26,6 +28,8 @@ const TaskFilters = ({
   status,
   onPriorityChange,
   priority,
+  search,
+  onSearchChange,
 }: Props) => {
   return (
     <div className="border-b">
@@ -49,6 +53,8 @@ const TaskFilters = ({
               type="search"
               placeholder="Search task title"
               className="h-8 rounded-sm pl-9"
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
             />
           </div>
 
