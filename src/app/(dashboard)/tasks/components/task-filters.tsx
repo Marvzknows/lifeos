@@ -20,6 +20,7 @@ type Props = {
   onPriorityChange: (value: string | null) => void;
   search: string;
   onSearchChange: (value: string | null) => void;
+  isLoading: boolean;
 };
 
 const TaskFilters = ({
@@ -30,6 +31,7 @@ const TaskFilters = ({
   priority,
   search,
   onSearchChange,
+  isLoading,
 }: Props) => {
   return (
     <div className="border-b">
@@ -55,12 +57,14 @@ const TaskFilters = ({
               className="h-8 rounded-sm pl-9"
               value={search}
               onChange={(e) => onSearchChange(e.target.value)}
+              disabled={isLoading}
             />
           </div>
 
           <Button
             onClick={onAddTask}
             className="h-8 text-xs w-full rounded-sm bg-indigo-600 px-3 text-white hover:bg-indigo-500 sm:w-auto"
+            disabled={isLoading}
           >
             <Plus className="mr-2 h-4 w-4" />
             New Task
@@ -70,7 +74,11 @@ const TaskFilters = ({
 
       {/* Filters */}
       <div className="flex flex-col gap-2.5 border-t bg-muted/20 px-4 py-3 sm:flex-row sm:items-center sm:px-6">
-        <Select value={status} onValueChange={onStatusChange}>
+        <Select
+          disabled={isLoading}
+          value={status}
+          onValueChange={onStatusChange}
+        >
           <SelectTrigger className="h-9 w-full rounded-md bg-background sm:w-45">
             <span className="text-muted-foreground">Status:</span>
             <SelectValue>{capitalizeWords(status)}</SelectValue>
@@ -87,7 +95,11 @@ const TaskFilters = ({
           </SelectContent>
         </Select>
 
-        <Select value={priority} onValueChange={onPriorityChange}>
+        <Select
+          disabled={isLoading}
+          value={priority}
+          onValueChange={onPriorityChange}
+        >
           <SelectTrigger className="h-9 w-full rounded-md bg-background sm:w-45">
             <span className="text-muted-foreground">Priority:</span>
             {priority ? (

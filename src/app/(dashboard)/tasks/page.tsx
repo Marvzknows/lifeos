@@ -11,9 +11,10 @@ import { AddTaskModal } from "./modals/add-task-modal";
 import { toast } from "@/components/ui/toast";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import TaskFilters from "./components/task-filters";
-import { useTasks } from "@/lib/api/services/hooks/tasks.hooks";
+import { useCreateTask, useTasks } from "@/lib/api/services/hooks/tasks.hooks";
 import { TaskPriority, TaskStatus } from "@/app/types/task";
 import { useDebounce } from "@/hooks/use-debounce";
+import { TaskFormValues } from "@/schemas/task/task-form-schema";
 
 const PAGE_SIZE = 10;
 
@@ -36,6 +37,8 @@ const TasksPage = () => {
     ...(debouncedSearch && { search: debouncedSearch }),
     ...(priority && { priority }),
   });
+
+  const { mutateAsync: createTask, isPending: createTaskLoading } = useCreateTask();
 
   // #region Handlers
 
@@ -78,9 +81,21 @@ const TasksPage = () => {
     setPage(1);
   };
 
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-  };
+const handleOnSubmitTask = (values: TaskFormValues) => {
+  toast.promise(createTask(values), {
+    loading: "Creating task...",
+    success: () => {
+      setIsAddTaskModalOpen(false);
+      return {
+        title: "Task created",
+        description: "Your task has been created successfully.",
+      };
+    },
+      error: (error) => {
+        return error?.message ?? "Failed to create task.";
+      },
+  });
+};
 
   // #endregion Handlers
 
@@ -99,6 +114,7 @@ const TasksPage = () => {
               priority={priority}
               search={search}
               onSearchChange={handleSearchChange}
+              isLoading={createTaskLoading}
             />
           }
           columns={taskColumns({
@@ -116,7 +132,7 @@ const TasksPage = () => {
         <DataTablePagination
           page={data?.pagination?.page ?? 1}
           pageCount={data?.pagination?.totalPages ?? 0}
-          onPageChange={handlePageChange}
+          onPageChange={(newPage) => setPage(newPage)}
         />
       </div>
 
@@ -124,12 +140,7 @@ const TasksPage = () => {
       <AddTaskModal
         open={isAddTaskModalOpen}
         onOpenChange={setIsAddTaskModalOpen}
-        onSubmit={() => {
-          toast.add({
-            title: "Task added",
-            description: "Your new task has been added.",
-          });
-        }}
+        onSubmit={handleOnSubmitTask}
       />
 
       <ConfirmationDialog

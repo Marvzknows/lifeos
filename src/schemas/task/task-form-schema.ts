@@ -10,7 +10,7 @@ export const taskFormSchema = z.object({
     .min(1, "Task title is required")
     .max(100, "Task title must not exceed 100 characters"),
 
-  priority: z.enum(["Low", "Medium", "High"], {
+  priority: z.enum(["LOW", "MEDIUM", "HIGH"], {
     message: "Priority is required",
   }),
 

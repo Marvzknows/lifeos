@@ -38,24 +38,7 @@ import {
   taskFormSchema,
   TaskFormValues,
 } from "@/schemas/task/task-form-schema";
-
-function formatDatePPP(date: Date): string {
-  const day = date.getDate();
-  const suffix =
-    day % 10 === 1 && day !== 11
-      ? "st"
-      : day % 10 === 2 && day !== 12
-        ? "nd"
-        : day % 10 === 3 && day !== 13
-          ? "rd"
-          : "th";
-  const monthYear = new Intl.DateTimeFormat("en-US", {
-    month: "long",
-    year: "numeric",
-  }).format(date);
-  const [month, year] = monthYear.split(" ");
-  return `${month} ${day}${suffix}, ${year}`;
-}
+import { formatDatePPP } from "@/helpers/formatDatePPP";
 
 interface AddTaskModalProps {
   open: boolean;
@@ -135,9 +118,9 @@ export function AddTaskModal({
                       <SelectValue placeholder="Select priority" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Low">Low</SelectItem>
-                      <SelectItem value="Medium">Medium</SelectItem>
-                      <SelectItem value="High">High</SelectItem>
+                      <SelectItem value="LOW">Low</SelectItem>
+                      <SelectItem value="MEDIUM">Medium</SelectItem>
+                      <SelectItem value="HIGH">High</SelectItem>
                     </SelectContent>
                   </Select>
                   {fieldState.invalid && (
