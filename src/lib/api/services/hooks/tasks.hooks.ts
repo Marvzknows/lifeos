@@ -114,11 +114,6 @@ export const useDeleteTask = () => {
       queryClient.removeQueries({
         queryKey: taskKeys.detail(id),
       });
-
-      toast.add({
-        title: "Task deleted",
-        description: "Your task has been deleted successfully.",
-      });
     },
 
     onError: (error) => {

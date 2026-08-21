@@ -11,7 +11,7 @@ import { AddTaskModal } from "./modals/add-task-modal";
 import { toast } from "@/components/ui/toast";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import TaskFilters from "./components/task-filters";
-import { useCreateTask, useTasks } from "@/lib/api/services/hooks/tasks.hooks";
+import { useCreateTask, useDeleteTask, useTasks } from "@/lib/api/services/hooks/tasks.hooks";
 import { TaskPriority, TaskStatus } from "@/app/types/task";
 import { useDebounce } from "@/hooks/use-debounce";
 import { TaskFormValues } from "@/schemas/task/task-form-schema";
@@ -23,6 +23,7 @@ const TasksPage = () => {
 
   const [openDelete, setOpenDelete] = useState(false);
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const [status, setStatus] = useState<TaskStatus>("all");
   const [priority, setPriority] = useState<TaskPriority | "">("");
@@ -39,7 +40,8 @@ const TasksPage = () => {
   });
 
   const { mutateAsync: createTask, isPending: createTaskLoading } = useCreateTask();
-
+  const { mutateAsync: deleteTask, isPending: deleteTaskLoading } = useDeleteTask();
+  const isLoadingHandlers = createTaskLoading || deleteTaskLoading;
   // #region Handlers
 
   const handleMarkComplete = (id: string) => {
@@ -53,17 +55,28 @@ const TasksPage = () => {
   };
 
   const handleDelete = () => {
+    if(!deleteId) return;
     setOpenDelete(false);
-
-    toast.promise(new Promise((resolve) => setTimeout(resolve, 2000)), {
+    toast.promise(deleteTask(deleteId), {
       loading: "Deleting task...",
-      success: "Task deleted!",
-      error: "Failed to delete task.",
+      success: () => {
+        setDeleteId(null);
+        return {
+          title: "Task deleted",
+          description: "Your task has been deleted successfully.",
+        };
+      },
+      error: () => {
+        return {
+          title: "Failed to delete task",
+          description: "Something went wrong.",
+        };
+      },
     });
   };
 
   const onDeleteTask = (id: string) => {
-    console.log("Delete task with id:", id);
+    setDeleteId(id);
     setOpenDelete(true);
   };
 
@@ -114,7 +127,7 @@ const handleOnSubmitTask = (values: TaskFormValues) => {
               priority={priority}
               search={search}
               onSearchChange={handleSearchChange}
-              isLoading={createTaskLoading}
+              isLoading={isLoadingHandlers}
             />
           }
           columns={taskColumns({
