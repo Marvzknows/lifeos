@@ -6,6 +6,7 @@ import {
   PaginatedTasksResponseT,
   TaskResponseT,
 } from "@/app/types/task";
+import { TaskUpdateStatusSchema } from "@/schemas/task/task-update-status";
 
 export const taskService = {
   create: async (data: TaskFormValues): Promise<TaskResponseT> => {
@@ -54,6 +55,17 @@ export const taskService = {
   restore: async (id: string): Promise<TaskResponseT> => {
     const { data: response } = await apiClient.post<TaskResponseT>(
       `/tasks/${id}/restore`,
+    );
+    return response;
+  },
+
+  updateTaskStatus: async (
+    id: string,
+    status: TaskUpdateStatusSchema["status"],
+  ): Promise<TaskResponseT> => {
+    const { data: response } = await apiClient.patch<TaskResponseT>(
+      `/tasks/${id}/status`,
+      { status },
     );
     return response;
   },

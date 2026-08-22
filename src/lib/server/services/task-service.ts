@@ -4,6 +4,7 @@ import { TaskQueryParams } from "@/schemas/task/task-query-schema";
 import { buildPaginatedResult } from "./pagination";
 import { UpdateTaskPayloadT } from "@/schemas/task/task-schema";
 import { TaskUpdateStatusSchema } from "@/schemas/task/task-update-status";
+import { TaskStatus } from "@/generated/prisma/browser";
 
 type CreateTaskPayloadT = {
   title: string;
@@ -80,7 +81,7 @@ function buildFilterWhere(filter: TaskQueryParams["filter"]) {
     case "upcoming":
       return { dueDate: { gt: startOfTomorrow } };
     case "completed":
-      return { completed: true };
+      return { status: TaskStatus.COMPLETED };
     case "all":
     default:
       return {};

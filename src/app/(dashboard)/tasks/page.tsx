@@ -11,7 +11,7 @@ import { AddTaskModal } from "./modals/add-task-modal";
 import { toast } from "@/components/ui/toast";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import TaskFilters from "./components/task-filters";
-import { useCreateTask, useDeleteTask, useTasks } from "@/lib/api/services/hooks/tasks.hooks";
+import { useCreateTask, useDeleteTask, useTasks, useUpdateTaskStatus } from "@/lib/api/services/hooks/tasks.hooks";
 import { TaskPriority, TaskStatus } from "@/app/types/task";
 import { useDebounce } from "@/hooks/use-debounce";
 import { TaskFormValues } from "@/schemas/task/task-form-schema";
@@ -41,21 +41,24 @@ const TasksPage = () => {
 
   const { mutateAsync: createTask, isPending: createTaskLoading } = useCreateTask();
   const { mutateAsync: deleteTask, isPending: deleteTaskLoading } = useDeleteTask();
-  const isLoadingHandlers = createTaskLoading || deleteTaskLoading;
+  const { mutateAsync: updateTaskStatus, isPending: updateTaskStatusLoading } = useUpdateTaskStatus();
+  const isLoadingHandlers = createTaskLoading || deleteTaskLoading || updateTaskStatusLoading;
   // #region Handlers
 
   const handleMarkComplete = (id: string) => {
-    console.log(id);
-
-    toast.promise(new Promise((resolve) => setTimeout(resolve, 2000)), {
+    if (!id) return
+    toast.promise(updateTaskStatus({ id, status: "COMPLETED" }), {
       loading: "Marking task as complete...",
-      success: "Task marked as complete!",
+      success: {
+        title: "Task status updated",
+        description: "Your task status has been updated successfully.",
+      },
       error: "Failed to mark task as complete.",
     });
   };
 
   const handleDelete = () => {
-    if(!deleteId) return;
+    if (!deleteId) return;
     setOpenDelete(false);
     toast.promise(deleteTask(deleteId), {
       loading: "Deleting task...",
@@ -94,21 +97,21 @@ const TasksPage = () => {
     setPage(1);
   };
 
-const handleOnSubmitTask = (values: TaskFormValues) => {
-  toast.promise(createTask(values), {
-    loading: "Creating task...",
-    success: () => {
-      setIsAddTaskModalOpen(false);
-      return {
-        title: "Task created",
-        description: "Your task has been created successfully.",
-      };
-    },
+  const handleOnSubmitTask = (values: TaskFormValues) => {
+    toast.promise(createTask(values), {
+      loading: "Creating task...",
+      success: () => {
+        setIsAddTaskModalOpen(false);
+        return {
+          title: "Task created",
+          description: "Your task has been created successfully.",
+        };
+      },
       error: (error) => {
         return error?.message ?? "Failed to create task.";
       },
-  });
-};
+    });
+  };
 
   // #endregion Handlers
 

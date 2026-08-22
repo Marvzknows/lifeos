@@ -39,7 +39,7 @@ const statusBadgeColor: Record<TaskUpdateStatusSchema["status"], string> = {
     "border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-400",
   IN_PROGRESS:
     "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-400",
-  };
+};
 
 const formatDueDate = (dueDate: string | null) => {
   if (!dueDate) {
@@ -59,105 +59,105 @@ export const taskColumns = ({
   onMarkComplete,
   onDeleteTask,
 }: TaskColumnsProps): DataTableColumn<Task>[] => [
-  {
-    id: "title",
-    header: "Task",
-    sortable: true,
-    sortAccessor: (row) => row.title,
-    cell: (row) => (
-      <div className="space-y-1.5">
-        <p className="font-medium leading-none">{row.title}</p>
+    {
+      id: "title",
+      header: "Task",
+      sortable: true,
+      sortAccessor: (row) => row.title,
+      cell: (row) => (
+        <div className="space-y-1.5">
+          <p className="font-medium leading-none">{row.title}</p>
 
-        {row.description && (
-          <p className="line-clamp-1 text-sm text-muted-foreground">
-            {row.description}
-          </p>
-        )}
-      </div>
-    ),
-  },
-
-  {
-    id: "priority",
-    header: "Priority",
-    sortable: true,
-    sortAccessor: (row) => priorityRank[row.priority],
-    cell: (row) => (
-      <div className="flex items-center gap-2">
-        <span
-          className={`h-2 w-2 rounded-full ${priorityDotColor[row.priority]}`}
-        />
-
-        <span>{capitalizeWords(row.priority)}</span>
-      </div>
-    ),
-  },
-
-  {
-    id: "dueDate",
-    header: "Due Date",
-    sortable: true,
-    sortAccessor: (row) => (row.dueDate ? new Date(row.dueDate) : ""),
-    cell: (row) => (
-      <span className="text-muted-foreground">
-        {formatDueDate(row.dueDate)}
-      </span>
-    ),
-  },
-
-  {
-    id: "status",
-    header: "Status",
-    sortable: true,
-    sortAccessor: (row) => (row.status === "COMPLETED" ? 1 : 0),
-    cell: (row) => {
-      const status = row.status;
-
-      return (
-        <Badge
-          variant="outline"
-          className={`rounded-sm ${statusBadgeColor[status]}`}
-        >
-          {capitalizeWords(status)}
-        </Badge>
-      );
-    },
-  },
-
-  {
-    id: "actions",
-    header: "",
-    width: "40px",
-    cell: (row) => (
-      <DropdownMenu>
-        <DropdownMenuTrigger>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <MoreVertical className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-
-        <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-          <DropdownMenuItem>Edit</DropdownMenuItem>
-
-          {!row.completed && (
-            <DropdownMenuItem onClick={() => onMarkComplete(row.id)}>
-              Mark as Complete
-            </DropdownMenuItem>
+          {row.description && (
+            <p className="line-clamp-1 text-sm text-muted-foreground">
+              {row.description}
+            </p>
           )}
+        </div>
+      ),
+    },
 
-          <DropdownMenuItem
-            onClick={() => onDeleteTask(row.id)}
-            className="text-destructive"
+    {
+      id: "priority",
+      header: "Priority",
+      sortable: true,
+      sortAccessor: (row) => priorityRank[row.priority],
+      cell: (row) => (
+        <div className="flex items-center gap-2">
+          <span
+            className={`h-2 w-2 rounded-full ${priorityDotColor[row.priority]}`}
+          />
+
+          <span>{capitalizeWords(row.priority)}</span>
+        </div>
+      ),
+    },
+
+    {
+      id: "dueDate",
+      header: "Due Date",
+      sortable: true,
+      sortAccessor: (row) => (row.dueDate ? new Date(row.dueDate) : ""),
+      cell: (row) => (
+        <span className="text-muted-foreground">
+          {formatDueDate(row.dueDate)}
+        </span>
+      ),
+    },
+
+    {
+      id: "status",
+      header: "Status",
+      sortable: true,
+      sortAccessor: (row) => (row.status === "COMPLETED" ? 1 : 0),
+      cell: (row) => {
+        const status = row.status;
+
+        return (
+          <Badge
+            variant="outline"
+            className={`rounded-sm ${statusBadgeColor[status]}`}
           >
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    ),
-  },
-];
+            {capitalizeWords(status)}
+          </Badge>
+        );
+      },
+    },
+
+    {
+      id: "actions",
+      header: "",
+      width: "40px",
+      cell: (row) => (
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+            <DropdownMenuItem>Edit</DropdownMenuItem>
+
+            {!row.completed && (
+              <DropdownMenuItem disabled={row.status === 'COMPLETED'} onClick={() => onMarkComplete(row.id)}>
+                Mark as Complete
+              </DropdownMenuItem>
+            )}
+
+            <DropdownMenuItem
+              onClick={() => onDeleteTask(row.id)}
+              className="text-destructive"
+            >
+              Delete
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      ),
+    },
+  ];

@@ -9,6 +9,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ApiError } from "../../axios";
 import taskService from "../tasks.services";
 import { toast } from "@/components/ui/toast";
+import { TaskUpdateStatusSchema } from "@/schemas/task/task-update-status";
 
 export const taskKeys = {
   all: ["tasks"] as const,
@@ -150,6 +151,32 @@ export const useRestoreTask = () => {
     onError: (error) => {
       toast.add({
         title: "Failed to restore task",
+        description: error.message || "Something went wrong.",
+      });
+    },
+  });
+};
+
+// Mark as complete/pending
+export const useUpdateTaskStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<TaskResponseT, ApiError, { id: string; status: TaskUpdateStatusSchema["status"] }>({
+    mutationFn: ({ id, status }) => taskService.updateTaskStatus(id, status),
+
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: taskKeys.all,
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: taskKeys.detail(variables.id),
+      });
+    },
+
+    onError: (error) => {
+      toast.add({
+        title: "Failed to update task status",
         description: error.message || "Something went wrong.",
       });
     },
