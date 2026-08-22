@@ -143,12 +143,9 @@ export const taskColumns = ({
 
           <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
             <DropdownMenuItem>Edit</DropdownMenuItem>
-
-            {!row.completed && (
-              <DropdownMenuItem disabled={row.status === 'COMPLETED'} onClick={() => onMarkComplete(row.id)}>
-                Mark as Complete
-              </DropdownMenuItem>
-            )}
+            <DropdownMenuItem disabled={row.status === 'COMPLETED'} onClick={() => onMarkComplete(row.id)}>
+              Mark as Complete
+            </DropdownMenuItem>
 
             <DropdownMenuItem
               onClick={() => onDeleteTask(row.id)}

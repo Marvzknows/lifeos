@@ -44,7 +44,6 @@ export const updateTaskSchema = z.object({
     }),
   priority: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
   dueDate: z.coerce.date({ error: "Due date must be a valid date" }).optional(),
-  completed: z.boolean().optional(),
 });
 
 export type UpdateTaskPayloadT = z.infer<typeof updateTaskSchema>;

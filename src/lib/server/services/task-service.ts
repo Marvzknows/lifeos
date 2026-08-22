@@ -21,7 +21,6 @@ type AssertTaskAccessT = {
 const taskSelect = {
   id: true,
   title: true,
-  completed: true,
   priority: true,
   dueDate: true,
   status: true,

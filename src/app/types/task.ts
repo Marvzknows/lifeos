@@ -7,7 +7,6 @@ export type Task = {
   id: string;
   title: string;
   description: string | null;
-  completed: boolean;
   priority: TaskPriority;
   dueDate: string | null;
   status: "PENDING" | "COMPLETED";
