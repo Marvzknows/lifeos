@@ -3,6 +3,7 @@ import { ForbiddenError, NotFoundError } from "../errors/errors";
 import { TaskQueryParams } from "@/schemas/task/task-query-schema";
 import { buildPaginatedResult } from "./pagination";
 import { UpdateTaskPayloadT } from "@/schemas/task/task-schema";
+import { TaskUpdateStatusSchema } from "@/schemas/task/task-update-status";
 
 type CreateTaskPayloadT = {
   title: string;
@@ -147,6 +148,16 @@ export async function restoreTask(userId: string, id: string) {
   return prisma.task.update({
     where: { id },
     data: { deletedAt: null },
+    select: taskSelect,
+  });
+}
+
+export async function updateTaskStatus(userId: string, id: string, status: TaskUpdateStatusSchema["status"]) {
+  await assertTaskAccess({ userId, taskId: id });
+
+  return prisma.task.update({
+    where: { id },
+    data: { status },
     select: taskSelect,
   });
 }

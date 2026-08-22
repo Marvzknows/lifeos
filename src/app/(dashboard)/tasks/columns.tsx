@@ -13,6 +13,7 @@ import {
 import { DataTableColumn } from "@/components/data-table/data-table";
 import { Task, TaskPriority } from "@/app/types/task";
 import { capitalizeWords } from "@/helpers/capitalize-words";
+import { TaskUpdateStatusSchema } from "@/schemas/task/task-update-status";
 
 const priorityDotColor: Record<TaskPriority, string> = {
   HIGH: "bg-red-500",
@@ -31,12 +32,14 @@ type TaskColumnsProps = {
   onDeleteTask: (id: string) => void;
 };
 
-const statusBadgeColor: Record<"COMPLETED" | "PENDING", string> = {
+const statusBadgeColor: Record<TaskUpdateStatusSchema["status"], string> = {
   COMPLETED:
     "border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-400",
   PENDING:
     "border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-400",
-};
+  IN_PROGRESS:
+    "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-400",
+  };
 
 const formatDueDate = (dueDate: string | null) => {
   if (!dueDate) {
