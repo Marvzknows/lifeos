@@ -23,6 +23,12 @@ enum TaskPriority {
   HIGH
 }
 
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
 model User {
   id        String   @id @db.Uuid
   email     String   @unique
@@ -41,6 +47,7 @@ model Task {
   description String?
   completed   Boolean      @default(false)
   priority    TaskPriority @default(MEDIUM)
+  status      TaskStatus   @default(PENDING)
   dueDate     DateTime?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt

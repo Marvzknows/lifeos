@@ -10,6 +10,7 @@ export type Task = {
   completed: boolean;
   priority: TaskPriority;
   dueDate: string | null;
+  status: "PENDING" | "COMPLETED";
   createdAt: string;
   updatedAt: string;
 };

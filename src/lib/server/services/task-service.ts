@@ -22,6 +22,7 @@ const taskSelect = {
   completed: true,
   priority: true,
   dueDate: true,
+  status: true,
   createdAt: true,
   updatedAt: true,
   description: true,

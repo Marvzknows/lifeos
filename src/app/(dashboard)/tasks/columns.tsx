@@ -31,10 +31,10 @@ type TaskColumnsProps = {
   onDeleteTask: (id: string) => void;
 };
 
-const statusBadgeColor: Record<"completed" | "pending", string> = {
-  completed:
+const statusBadgeColor: Record<"COMPLETED" | "PENDING", string> = {
+  COMPLETED:
     "border-green-200 bg-green-50 text-green-700 dark:border-green-800 dark:bg-green-950 dark:text-green-400",
-  pending:
+  PENDING:
     "border-yellow-200 bg-yellow-50 text-yellow-700 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-400",
 };
 
@@ -106,16 +106,16 @@ export const taskColumns = ({
     id: "status",
     header: "Status",
     sortable: true,
-    sortAccessor: (row) => (row.completed ? 1 : 0),
+    sortAccessor: (row) => (row.status === "COMPLETED" ? 1 : 0),
     cell: (row) => {
-      const status = row.completed ? "completed" : "pending";
+      const status = row.status;
 
       return (
         <Badge
           variant="outline"
           className={`rounded-sm ${statusBadgeColor[status]}`}
         >
-          {row.completed ? "Completed" : "Pending"}
+          {capitalizeWords(status)}
         </Badge>
       );
     },
