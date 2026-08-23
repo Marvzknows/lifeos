@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -46,8 +47,14 @@ const TaskFilters = ({
   onResetFilters,
   isLoading,
 }: Props) => {
+  const [dueDatePopoverOpen, setDueDatePopoverOpen] = useState(false);
   const hasActiveFilters =
     status !== "all" || !!priority || !!search || !!dueDate;
+
+  const handleDueDateSelect = (date?: Date) => {
+    onDueDateChange(date);
+    setDueDatePopoverOpen(false);
+  };
 
   return (
     <div className="border-b">
@@ -136,7 +143,7 @@ const TaskFilters = ({
           </SelectContent>
         </Select>
 
-        <Popover>
+        <Popover open={dueDatePopoverOpen} onOpenChange={setDueDatePopoverOpen}>
           <PopoverTrigger
             render={
               <Button
@@ -159,7 +166,7 @@ const TaskFilters = ({
             <Calendar
               mode="single"
               selected={dueDate}
-              onSelect={onDueDateChange}
+              onSelect={handleDueDateSelect}
               defaultMonth={dueDate}
             />
           </PopoverContent>

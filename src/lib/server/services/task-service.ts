@@ -91,8 +91,20 @@ export async function getPaginatedTasks(
   userId: string,
   query: TaskQueryParams,
 ) {
-  const { page, limit, priority, filter, search } = query;
+  const { page, limit, priority, filter, search, dueDate } = query;
   const skip = (page - 1) * limit;
+
+  const dueDateFilter = dueDate
+    ? (() => {
+      const startOfDay = new Date(dueDate);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const startOfNextDay = new Date(startOfDay);
+      startOfNextDay.setDate(startOfNextDay.getDate() + 1);
+
+      return { dueDate: { gte: startOfDay, lt: startOfNextDay } };
+    })()
+    : {};
 
   const where = {
     userId,
@@ -102,6 +114,7 @@ export async function getPaginatedTasks(
       title: { contains: search, mode: "insensitive" as const },
     }),
     ...buildFilterWhere(filter),
+    ...dueDateFilter,
   };
 
   const [tasks, total] = await Promise.all([

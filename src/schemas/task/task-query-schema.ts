@@ -6,6 +6,7 @@ export const taskQuerySchema = z.object({
   priority: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
   filter: z.enum(["all", "today", "upcoming", "completed"]).default("all"),
   search: z.string().trim().min(1).max(200).optional(),
+  dueDate: z.date().optional(),
 });
 
 export type TaskQueryParams = z.infer<typeof taskQuerySchema>;

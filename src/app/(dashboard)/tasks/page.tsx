@@ -18,6 +18,7 @@ import { TaskFormValues } from "@/schemas/task/task-form-schema";
 import { EditTaskModal } from "./modals/edit-task-modal";
 import { TaskUpdateStatusSchema } from "@/schemas/task/task-update-status";
 import { capitalizeWords } from "@/helpers/capitalize-words";
+import { formatDateForApi } from "@/helpers/formatDateForApi";
 
 const PAGE_SIZE = 10;
 
@@ -43,6 +44,7 @@ const TasksPage = () => {
     filter: status,
     ...(debouncedSearch && { search: debouncedSearch }),
     ...(priority && { priority }),
+    ...(dueDate && { dueDate: formatDateForApi(dueDate) }),
   });
 
   const { mutateAsync: createTask, isPending: createTaskLoading } = useCreateTask();
@@ -50,7 +52,10 @@ const TasksPage = () => {
   const { mutateAsync: updateTaskStatus, isPending: updateTaskStatusLoading } = useUpdateTaskStatus();
   const { mutateAsync: updateTask, isPending: updateTaskLoading } = useUpdateTask();
 
-  const isLoadingHandlers = createTaskLoading || deleteTaskLoading || updateTaskStatusLoading || updateTaskLoading;
+  const isLoadingHandlers = createTaskLoading
+    || deleteTaskLoading
+    || updateTaskStatusLoading
+    || updateTaskLoading;
   // #region Handlers
 
   const handleChangeTaskStatus = (id: string, status: TaskUpdateStatusSchema['status']) => {

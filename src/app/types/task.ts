@@ -27,4 +27,5 @@ export type GetTasksParamsT = {
   priority?: TaskPriority;
   filter?: "all" | "today" | "upcoming" | "completed";
   search?: string;
+  dueDate?: string;
 };

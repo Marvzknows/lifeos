@@ -32,6 +32,7 @@ export async function GET(request: NextRequest) {
       priority: searchParams.get("priority") ?? undefined,
       filter: searchParams.get("filter") ?? undefined,
       search: searchParams.get("search") ?? undefined,
+      dueDate: searchParams.get("dueDate") ? new Date(searchParams.get("dueDate")!) : undefined
     });
 
     const result = await getPaginatedTasks(userId, query);
