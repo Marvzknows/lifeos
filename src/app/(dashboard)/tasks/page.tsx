@@ -12,9 +12,10 @@ import { toast } from "@/components/ui/toast";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import TaskFilters from "./components/task-filters";
 import { useCreateTask, useDeleteTask, useTasks, useUpdateTaskStatus } from "@/lib/api/services/hooks/tasks.hooks";
-import { TaskPriority, TaskStatus } from "@/app/types/task";
+import { Task, TaskPriority, TaskStatus } from "@/app/types/task";
 import { useDebounce } from "@/hooks/use-debounce";
 import { TaskFormValues } from "@/schemas/task/task-form-schema";
+import { EditTaskModal } from "./modals/edit-task-modal";
 
 const PAGE_SIZE = 10;
 
@@ -29,6 +30,7 @@ const TasksPage = () => {
   const [priority, setPriority] = useState<TaskPriority | "">("");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const debouncedSearch = useDebounce(search);
   const { data, isLoading, isFetching } = useTasks({
@@ -81,6 +83,10 @@ const TasksPage = () => {
   const onDeleteTask = (id: string) => {
     setDeleteId(id);
     setOpenDelete(true);
+  };
+
+  const onEditTask = (task: Task) => {
+    setEditingTask(task);
   };
 
   const handleStatusChange = (value: string | null) => {
@@ -136,6 +142,7 @@ const TasksPage = () => {
           columns={taskColumns({
             onMarkComplete: handleMarkComplete,
             onDeleteTask: onDeleteTask,
+            onEditTask,
           })}
           data={data?.data ?? []}
           getRowId={(task) => task.id}
@@ -157,6 +164,15 @@ const TasksPage = () => {
         open={isAddTaskModalOpen}
         onOpenChange={setIsAddTaskModalOpen}
         onSubmit={handleOnSubmitTask}
+      />
+
+      <EditTaskModal
+        open={!!editingTask}
+        onOpenChange={(open) => !open && setEditingTask(null)}
+        task={editingTask}
+        // onSubmit={handleOnSubmitEditTask}
+        onSubmit={(val) => console.table(val)}
+        isSubmitting={false}
       />
 
       <ConfirmationDialog

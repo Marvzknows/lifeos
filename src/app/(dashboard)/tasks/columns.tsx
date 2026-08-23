@@ -30,6 +30,7 @@ const priorityRank: Record<TaskPriority, number> = {
 type TaskColumnsProps = {
   onMarkComplete: (id: string) => void;
   onDeleteTask: (id: string) => void;
+  onEditTask: (task: Task) => void;
 };
 
 const statusBadgeColor: Record<TaskUpdateStatusSchema["status"], string> = {
@@ -58,6 +59,7 @@ const formatDueDate = (dueDate: string | null) => {
 export const taskColumns = ({
   onMarkComplete,
   onDeleteTask,
+  onEditTask,
 }: TaskColumnsProps): DataTableColumn<Task>[] => [
     {
       id: "title",
@@ -142,7 +144,7 @@ export const taskColumns = ({
           </DropdownMenuTrigger>
 
           <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-            <DropdownMenuItem>Edit</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => onEditTask(row)}>Edit</DropdownMenuItem>
             <DropdownMenuItem disabled={row.status === 'COMPLETED'} onClick={() => onMarkComplete(row.id)}>
               Mark as Complete
             </DropdownMenuItem>
