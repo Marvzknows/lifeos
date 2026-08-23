@@ -7,10 +7,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { taskPriorityFilterOptions, taskStatusFilterOptions } from "../types";
-import { Plus, Search } from "lucide-react";
+import { CalendarIcon, Plus, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { capitalizeWords } from "@/helpers/capitalize-words";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { formatDatePPP } from "@/helpers/formatDatePPP";
 
 type Props = {
   onAddTask: () => void;
@@ -20,6 +27,9 @@ type Props = {
   onPriorityChange: (value: string | null) => void;
   search: string;
   onSearchChange: (value: string | null) => void;
+  dueDate?: Date;
+  onDueDateChange: (date?: Date) => void;
+  onResetFilters: () => void;
   isLoading: boolean;
 };
 
@@ -31,8 +41,14 @@ const TaskFilters = ({
   priority,
   search,
   onSearchChange,
+  dueDate,
+  onDueDateChange,
+  onResetFilters,
   isLoading,
 }: Props) => {
+  const hasActiveFilters =
+    status !== "all" || !!priority || !!search || !!dueDate;
+
   return (
     <div className="border-b">
       {/* Header */}
@@ -119,6 +135,48 @@ const TaskFilters = ({
             </SelectGroup>
           </SelectContent>
         </Select>
+
+        <Popover>
+          <PopoverTrigger
+            render={
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isLoading}
+                data-empty={!dueDate}
+                className="h-9 w-full justify-start rounded-md bg-background text-left font-normal data-[empty=true]:text-muted-foreground sm:w-45"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+                {dueDate ? (
+                  <span className="truncate">{formatDatePPP(dueDate)}</span>
+                ) : (
+                  <span className="truncate">Due Date: All</span>
+                )}
+              </Button>
+            }
+          />
+          <PopoverContent className="w-auto p-0" align="start">
+            <Calendar
+              mode="single"
+              selected={dueDate}
+              onSelect={onDueDateChange}
+              defaultMonth={dueDate}
+            />
+          </PopoverContent>
+        </Popover>
+
+        {hasActiveFilters && (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onResetFilters}
+            disabled={isLoading}
+            className="h-9 w-full rounded-md text-muted-foreground hover:text-foreground sm:w-auto"
+          >
+            <X className="mr-1.5 h-3.5 w-3.5" />
+            Reset filters
+          </Button>
+        )}
       </div>
     </div>
   );

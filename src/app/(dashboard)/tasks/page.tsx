@@ -28,9 +28,11 @@ const TasksPage = () => {
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
+  // Filters
   const [status, setStatus] = useState<TaskStatus>("all");
   const [priority, setPriority] = useState<TaskPriority | "">("");
   const [search, setSearch] = useState("");
+  const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
@@ -138,6 +140,19 @@ const TasksPage = () => {
       error: (error) => error?.message ?? "Failed to update task.",
     });
   };
+
+  const handleDueDateChange = (date?: Date) => {
+    setDueDate(date);
+    setPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setStatus("all");
+    setPriority("");
+    setSearch("");
+    setDueDate(undefined);
+    setPage(1);
+  };
   // #endregion Handlers
 
   return (
@@ -156,6 +171,9 @@ const TasksPage = () => {
               search={search}
               onSearchChange={handleSearchChange}
               isLoading={isLoadingHandlers}
+              dueDate={dueDate}
+              onDueDateChange={handleDueDateChange}
+              onResetFilters={handleResetFilters}
             />
           }
           columns={taskColumns({
