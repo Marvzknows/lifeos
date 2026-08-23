@@ -11,7 +11,7 @@ import { AddTaskModal } from "./modals/add-task-modal";
 import { toast } from "@/components/ui/toast";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import TaskFilters from "./components/task-filters";
-import { useCreateTask, useDeleteTask, useTasks, useUpdateTaskStatus } from "@/lib/api/services/hooks/tasks.hooks";
+import { useCreateTask, useDeleteTask, useTasks, useUpdateTask, useUpdateTaskStatus } from "@/lib/api/services/hooks/tasks.hooks";
 import { Task, TaskPriority, TaskStatus } from "@/app/types/task";
 import { useDebounce } from "@/hooks/use-debounce";
 import { TaskFormValues } from "@/schemas/task/task-form-schema";
@@ -44,7 +44,9 @@ const TasksPage = () => {
   const { mutateAsync: createTask, isPending: createTaskLoading } = useCreateTask();
   const { mutateAsync: deleteTask, isPending: deleteTaskLoading } = useDeleteTask();
   const { mutateAsync: updateTaskStatus, isPending: updateTaskStatusLoading } = useUpdateTaskStatus();
-  const isLoadingHandlers = createTaskLoading || deleteTaskLoading || updateTaskStatusLoading;
+  const { mutateAsync: updateTask, isPending: updateTaskLoading } = useUpdateTask();
+
+  const isLoadingHandlers = createTaskLoading || deleteTaskLoading || updateTaskStatusLoading || updateTaskLoading;
   // #region Handlers
 
   const handleMarkComplete = (id: string) => {
@@ -119,6 +121,21 @@ const TasksPage = () => {
     });
   };
 
+  const handleOnSubmitEditTask = (values: TaskFormValues) => {
+    if (!editingTask) return;
+
+    toast.promise(updateTask({ id: editingTask.id, data: values }), {
+      loading: "Saving changes...",
+      success: () => {
+        setEditingTask(null);
+        return {
+          title: "Task updated",
+          description: "Your task has been updated successfully.",
+        };
+      },
+      error: (error) => error?.message ?? "Failed to update task.",
+    });
+  };
   // #endregion Handlers
 
   return (
@@ -170,9 +187,8 @@ const TasksPage = () => {
         open={!!editingTask}
         onOpenChange={(open) => !open && setEditingTask(null)}
         task={editingTask}
-        // onSubmit={handleOnSubmitEditTask}
-        onSubmit={(val) => console.table(val)}
-        isSubmitting={false}
+        onSubmit={handleOnSubmitEditTask}
+        isSubmitting={updateTaskLoading}
       />
 
       <ConfirmationDialog

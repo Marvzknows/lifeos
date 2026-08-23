@@ -84,11 +84,6 @@ export const useUpdateTask = () => {
       queryClient.invalidateQueries({
         queryKey: taskKeys.detail(variables.id),
       });
-
-      toast.add({
-        title: "Task updated",
-        description: "Your task has been updated successfully.",
-      });
     },
 
     onError: (error) => {
