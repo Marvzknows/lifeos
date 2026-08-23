@@ -16,6 +16,8 @@ import { Task, TaskPriority, TaskStatus } from "@/app/types/task";
 import { useDebounce } from "@/hooks/use-debounce";
 import { TaskFormValues } from "@/schemas/task/task-form-schema";
 import { EditTaskModal } from "./modals/edit-task-modal";
+import { TaskUpdateStatusSchema } from "@/schemas/task/task-update-status";
+import { capitalizeWords } from "@/helpers/capitalize-words";
 
 const PAGE_SIZE = 10;
 
@@ -49,10 +51,10 @@ const TasksPage = () => {
   const isLoadingHandlers = createTaskLoading || deleteTaskLoading || updateTaskStatusLoading || updateTaskLoading;
   // #region Handlers
 
-  const handleMarkComplete = (id: string) => {
+  const handleChangeTaskStatus = (id: string, status: TaskUpdateStatusSchema['status']) => {
     if (!id) return
-    toast.promise(updateTaskStatus({ id, status: "COMPLETED" }), {
-      loading: "Marking task as complete...",
+    toast.promise(updateTaskStatus({ id, status }), {
+      loading: `Marking task as ${capitalizeWords(status)}...`,
       success: {
         title: "Task status updated",
         description: "Your task status has been updated successfully.",
@@ -157,7 +159,7 @@ const TasksPage = () => {
             />
           }
           columns={taskColumns({
-            onMarkComplete: handleMarkComplete,
+            handleChangeTaskStatus: handleChangeTaskStatus,
             onDeleteTask: onDeleteTask,
             onEditTask,
           })}

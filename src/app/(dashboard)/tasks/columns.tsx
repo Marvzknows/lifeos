@@ -28,7 +28,7 @@ const priorityRank: Record<TaskPriority, number> = {
 };
 
 type TaskColumnsProps = {
-  onMarkComplete: (id: string) => void;
+  handleChangeTaskStatus: (id: string, status: TaskUpdateStatusSchema["status"]) => void;
   onDeleteTask: (id: string) => void;
   onEditTask: (task: Task) => void;
 };
@@ -57,7 +57,7 @@ const formatDueDate = (dueDate: string | null) => {
 };
 
 export const taskColumns = ({
-  onMarkComplete,
+  handleChangeTaskStatus,
   onDeleteTask,
   onEditTask,
 }: TaskColumnsProps): DataTableColumn<Task>[] => [
@@ -130,33 +130,50 @@ export const taskColumns = ({
       id: "actions",
       header: "",
       width: "40px",
-      cell: (row) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
+      cell: (row) => {
+        const statusOptions: { value: TaskUpdateStatusSchema["status"]; label: string }[] = [
+          { value: "PENDING", label: "Mark as Pending" },
+          { value: "IN_PROGRESS", label: "Mark as In Progress" },
+          { value: "COMPLETED", label: "Mark as Complete" },
+        ];
 
-          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
-            <DropdownMenuItem onClick={() => onEditTask(row)}>Edit</DropdownMenuItem>
-            <DropdownMenuItem disabled={row.status === 'COMPLETED'} onClick={() => onMarkComplete(row.id)}>
-              Mark as Complete
-            </DropdownMenuItem>
+        return (
+          <DropdownMenu>
+            <DropdownMenuTrigger>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
 
-            <DropdownMenuItem
-              onClick={() => onDeleteTask(row.id)}
-              className="text-destructive"
-            >
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ),
+            <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+              <DropdownMenuItem className={'text-xs'} onClick={() => onEditTask(row)}>Edit</DropdownMenuItem>
+
+              {statusOptions
+                .filter((option) => option.value !== row.status)
+                .map((option) => (
+                  <DropdownMenuItem
+                    className={'text-xs'}
+                    key={option.value}
+                    onClick={() => handleChangeTaskStatus(row.id, option.value)}
+                  >
+                    {option.label}
+                  </DropdownMenuItem>
+                ))}
+
+              <DropdownMenuItem
+                onClick={() => onDeleteTask(row.id)}
+                className="text-destructive text-xs"
+              >
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        );
+      },
     },
   ];

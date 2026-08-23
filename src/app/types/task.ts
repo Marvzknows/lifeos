@@ -1,3 +1,4 @@
+import { TaskUpdateStatusSchema } from "@/schemas/task/task-update-status";
 import { PaginatedResponseT } from "./globals";
 
 export type TaskPriority = "LOW" | "MEDIUM" | "HIGH";
@@ -9,7 +10,7 @@ export type Task = {
   description: string | null;
   priority: TaskPriority;
   dueDate: string | null;
-  status: "PENDING" | "COMPLETED";
+  status: TaskUpdateStatusSchema["status"];
   createdAt: string;
   updatedAt: string;
 };
