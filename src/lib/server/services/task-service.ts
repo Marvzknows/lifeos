@@ -174,3 +174,69 @@ export async function updateTaskStatus(userId: string, id: string, status: TaskU
     select: taskSelect,
   });
 }
+
+export async function getTaskStats(userId: string) {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const startOfTomorrow = new Date(startOfToday);
+  startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+
+  const baseWhere = {
+    userId,
+    deletedAt: null,
+  };
+
+  const [upcoming, today, overdue, completed] = await Promise.all([
+    prisma.task.count({
+      where: {
+        ...baseWhere,
+        status: {
+          not: TaskStatus.COMPLETED,
+        },
+        dueDate: {
+          gte: startOfTomorrow,
+        },
+      },
+    }),
+
+    prisma.task.count({
+      where: {
+        ...baseWhere,
+        status: {
+          not: TaskStatus.COMPLETED,
+        },
+        dueDate: {
+          gte: startOfToday,
+          lt: startOfTomorrow,
+        },
+      },
+    }),
+
+    prisma.task.count({
+      where: {
+        ...baseWhere,
+        status: {
+          not: TaskStatus.COMPLETED,
+        },
+        dueDate: {
+          lt: startOfToday,
+        },
+      },
+    }),
+
+    prisma.task.count({
+      where: {
+        ...baseWhere,
+        status: TaskStatus.COMPLETED,
+      },
+    }),
+  ]);
+
+  return {
+    upcoming,
+    today,
+    overdue,
+    completed,
+  };
+}
