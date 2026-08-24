@@ -11,7 +11,7 @@ import { AddTaskModal } from "./modals/add-task-modal";
 import { toast } from "@/components/ui/toast";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import TaskFilters from "./components/task-filters";
-import { useCreateTask, useDeleteTask, useTasks, useUpdateTask, useUpdateTaskStatus } from "@/lib/api/services/hooks/tasks.hooks";
+import { useCreateTask, useDeleteTask, useTasks, useTaskStats, useUpdateTask, useUpdateTaskStatus } from "@/lib/api/services/hooks/tasks.hooks";
 import { Task, TaskPriority, TaskStatus } from "@/app/types/task";
 import { useDebounce } from "@/hooks/use-debounce";
 import { TaskFormValues } from "@/schemas/task/task-form-schema";
@@ -38,7 +38,7 @@ const TasksPage = () => {
   const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   const debouncedSearch = useDebounce(search);
-  const { data, isLoading, isFetching } = useTasks({
+  const { data, isLoading } = useTasks({
     page,
     limit: PAGE_SIZE,
     filter: status,
@@ -46,6 +46,8 @@ const TasksPage = () => {
     ...(priority && { priority }),
     ...(dueDate && { dueDate: formatDateForApi(dueDate) }),
   });
+
+  const { data: stats, isLoading: isLoadingStats } = useTaskStats();
 
   const { mutateAsync: createTask, isPending: createTaskLoading } = useCreateTask();
   const { mutateAsync: deleteTask, isPending: deleteTaskLoading } = useDeleteTask();
@@ -162,7 +164,7 @@ const TasksPage = () => {
 
   return (
     <div className="space-y-6 p-6">
-      <TaskStats />
+      <TaskStats stats={stats} isLoading={isLoadingStats} />
 
       <div className="space-y-6">
         <DataTable
@@ -188,10 +190,10 @@ const TasksPage = () => {
           })}
           data={data?.data ?? []}
           getRowId={(task) => task.id}
-          enableRowSelection
+          enableRowSelection={true}
           onRowSelectionChange={(rows) => console.log("selected:", rows)}
           onRowClick={(task) => router.push(`/tasks/${task.id}`)}
-          isLoading={isLoading || isFetching}
+          isLoading={isLoading}
         />
 
         <DataTablePagination

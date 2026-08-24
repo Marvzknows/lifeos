@@ -5,6 +5,7 @@ import {
   GetTasksParamsT,
   PaginatedTasksResponseT,
   TaskResponseT,
+  TaskStatsResponseT,
 } from "@/app/types/task";
 import { TaskUpdateStatusSchema } from "@/schemas/task/task-update-status";
 
@@ -69,6 +70,11 @@ export const taskService = {
     );
     return response;
   },
+
+  taskStats: async (): Promise<TaskStatsResponseT> => {
+    const { data: response } = await apiClient.get("/tasks/stats");
+    return response;
+  }
 };
 
 export default taskService;

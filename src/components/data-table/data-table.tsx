@@ -154,7 +154,7 @@ export function DataTable<TData>({
                 <TableHead
                   key={col.id}
                   style={{ width: col.width }}
-                  className={col.className}
+                  className={cn("px-8 py-4", col.className)}
                 >
                   {col.sortable && col.sortAccessor ? (
                     <button
@@ -221,7 +221,10 @@ export function DataTable<TData>({
                       </TableCell>
                     )}
                     {columns.map((col) => (
-                      <TableCell key={col.id} className={col.className}>
+                      <TableCell
+                        key={col.id}
+                        className={cn("px-8 text-xs", col.className)}
+                      >
                         {col.cell(row)}
                       </TableCell>
                     ))}

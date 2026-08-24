@@ -29,3 +29,13 @@ export type GetTasksParamsT = {
   search?: string;
   dueDate?: string;
 };
+
+export type TaskStatsResponseT = {
+  stats: {
+    total: number;
+    completed: number;
+    today: number;
+    overdue: number;
+    upcoming: number;
+  };
+};

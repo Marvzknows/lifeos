@@ -2,6 +2,7 @@ import {
   GetTasksParamsT,
   PaginatedTasksResponseT,
   TaskResponseT,
+  TaskStatsResponseT,
 } from "@/app/types/task";
 import { TaskFormValues } from "@/schemas/task/task-form-schema";
 import { UpdateTaskPayloadT } from "@/schemas/task/task-schema";
@@ -21,6 +22,8 @@ export const taskKeys = {
   details: () => [...taskKeys.all, "detail"] as const,
 
   detail: (id: string) => [...taskKeys.details(), id] as const,
+
+  stats: () => [...taskKeys.all, "stats"] as const,
 };
 
 // Get all tasks
@@ -50,6 +53,10 @@ export const useCreateTask = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: taskKeys.all,
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: taskKeys.stats(),
       });
     },
 
@@ -110,6 +117,10 @@ export const useDeleteTask = () => {
       queryClient.removeQueries({
         queryKey: taskKeys.detail(id),
       });
+
+      queryClient.invalidateQueries({
+        queryKey: taskKeys.stats(),
+      });
     },
 
     onError: (error) => {
@@ -135,6 +146,10 @@ export const useRestoreTask = () => {
 
       queryClient.invalidateQueries({
         queryKey: taskKeys.detail(id),
+      });
+
+      queryClient.invalidateQueries({
+        queryKey: taskKeys.stats(),
       });
 
       toast.add({
@@ -167,6 +182,10 @@ export const useUpdateTaskStatus = () => {
       queryClient.invalidateQueries({
         queryKey: taskKeys.detail(variables.id),
       });
+
+      queryClient.invalidateQueries({
+        queryKey: taskKeys.stats(),
+      });
     },
 
     onError: (error) => {
@@ -175,5 +194,13 @@ export const useUpdateTaskStatus = () => {
         description: error.message || "Something went wrong.",
       });
     },
+  });
+};
+
+// Get task statistics
+export const useTaskStats = () => {
+  return useQuery<TaskStatsResponseT, ApiError>({
+    queryKey: taskKeys.stats(),
+    queryFn: () => taskService.taskStats(),
   });
 };

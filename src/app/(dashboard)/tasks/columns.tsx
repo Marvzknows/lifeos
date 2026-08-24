@@ -71,7 +71,7 @@ export const taskColumns = ({
           <p className="font-medium leading-none">{row.title}</p>
 
           {row.description && (
-            <p className="line-clamp-1 text-sm text-muted-foreground">
+            <p className="line-clamp-1 text-xs text-muted-foreground">
               {row.description}
             </p>
           )}
