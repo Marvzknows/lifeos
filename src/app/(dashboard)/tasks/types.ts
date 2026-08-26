@@ -4,7 +4,7 @@ export const tabTriggerClass =
 export type TaskTab = "all" | "today" | "upcoming" | "completed";
 
 export type TaskStatusFilter = {
-  value: "all" | "completed" | "today" | "upcoming";
+  value: "all" | "completed" | "today" | "upcoming" | "pending" | "in_progress" | "overdue";
   label: string;
 };
 
@@ -29,6 +29,18 @@ export const taskStatusFilterOptions: TaskStatusFilter[] = [
   {
     value: "completed",
     label: "Completed",
+  },
+  {
+    value: "pending",
+    label: "Pending",
+  },
+  {
+    value: "in_progress",
+    label: "In Progress",
+  },
+  {
+    value: "overdue",
+    label: "Overdue",
   },
 ];
 

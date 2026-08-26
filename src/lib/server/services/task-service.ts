@@ -79,6 +79,15 @@ function buildFilterWhere(filter: TaskQueryParams["filter"]) {
       return { dueDate: { gt: startOfTomorrow } };
     case "completed":
       return { status: TaskStatus.COMPLETED };
+    case "pending":
+      return { status: TaskStatus.PENDING };
+    case "in_progress":
+      return { status: TaskStatus.IN_PROGRESS };
+    case "overdue":
+      return {
+        dueDate: { lt: startOfToday },
+        status: { not: TaskStatus.COMPLETED },
+      };
     case "all":
     default:
       return {};
