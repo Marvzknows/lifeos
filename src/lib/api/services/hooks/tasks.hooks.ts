@@ -35,7 +35,7 @@ export const useTasks = (params?: GetTasksParamsT) => {
 };
 
 // Get task by ID
-export const useTask = (id: string) => {
+export const useViewTask = (id: string) => {
   return useQuery<TaskResponseT, ApiError>({
     queryKey: taskKeys.detail(id),
     queryFn: () => taskService.getById(id),

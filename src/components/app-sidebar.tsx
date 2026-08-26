@@ -23,8 +23,7 @@ import {
   LayoutDashboard,
   ArrowLeftRight,
   Wallet,
-  Receipt,
-  CreditCard,
+  ChartBarStacked,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -61,8 +60,7 @@ const data = {
           icon: ArrowLeftRight,
         },
         { title: "Budget", url: "#", icon: Wallet },
-        { title: "Bills", url: "#", icon: Receipt },
-        { title: "Subscriptions", url: "#", icon: CreditCard },
+        { title: "Categories", url: "#", icon: ChartBarStacked },
       ],
     },
   ],

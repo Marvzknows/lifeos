@@ -1,7 +1,6 @@
 "use client";
 
 import { TaskStats } from "@/components/tasks/task-stats";
-import { useRouter } from "next/navigation";
 import { taskColumns } from "./columns";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
@@ -11,7 +10,7 @@ import { AddTaskModal } from "./modals/add-task-modal";
 import { toast } from "@/components/ui/toast";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import TaskFilters from "./components/task-filters";
-import { useCreateTask, useDeleteTask, useTasks, useTaskStats, useUpdateTask, useUpdateTaskStatus } from "@/lib/api/services/hooks/tasks.hooks";
+import { useCreateTask, useDeleteTask, useTasks, useTaskStats, useUpdateTask, useUpdateTaskStatus, useViewTask } from "@/lib/api/services/hooks/tasks.hooks";
 import { Task, TaskPriority, TaskStatus } from "@/app/types/task";
 import { useDebounce } from "@/hooks/use-debounce";
 import { TaskFormValues } from "@/schemas/task/task-form-schema";
@@ -19,15 +18,16 @@ import { EditTaskModal } from "./modals/edit-task-modal";
 import { TaskUpdateStatusSchema } from "@/schemas/task/task-update-status";
 import { capitalizeWords } from "@/helpers/capitalize-words";
 import { formatDateForApi } from "@/helpers/formatDateForApi";
+import { ViewTaskDialog } from "./components/task-view-details-modal";
 
 const PAGE_SIZE = 10;
 
 const TasksPage = () => {
-  const router = useRouter();
 
   const [openDelete, setOpenDelete] = useState(false);
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [viewTaskId, setViewTaskId] = useState<string | null>(null);
 
   // Filters
   const [status, setStatus] = useState<TaskStatus>("all");
@@ -53,12 +53,17 @@ const TasksPage = () => {
   const { mutateAsync: deleteTask, isPending: deleteTaskLoading } = useDeleteTask();
   const { mutateAsync: updateTaskStatus, isPending: updateTaskStatusLoading } = useUpdateTaskStatus();
   const { mutateAsync: updateTask, isPending: updateTaskLoading } = useUpdateTask();
+  const { data: viewTaskData, isLoading: viewTaskLoading } = useViewTask(viewTaskId ?? '');
 
   const isLoadingHandlers = createTaskLoading
     || deleteTaskLoading
     || updateTaskStatusLoading
-    || updateTaskLoading;
+    || updateTaskLoading
+    || viewTaskLoading;
   // #region Handlers
+  const handleRowClick = (task: Task) => {
+    setViewTaskId(task.id);
+  };
 
   const handleChangeTaskStatus = (id: string, status: TaskUpdateStatusSchema['status']) => {
     if (!id) return
@@ -192,7 +197,7 @@ const TasksPage = () => {
           getRowId={(task) => task.id}
           enableRowSelection={true}
           onRowSelectionChange={(rows) => console.log("selected:", rows)}
-          onRowClick={(task) => router.push(`/tasks/${task.id}`)}
+          onRowClick={handleRowClick}
           isLoading={isLoading}
         />
 
@@ -232,6 +237,21 @@ const TasksPage = () => {
         confirmVariant="destructive"
         onConfirm={handleDelete}
         onCancel={() => setOpenDelete(false)}
+      />
+
+      <ViewTaskDialog
+        task={viewTaskData?.task ?? null}
+        open={!!viewTaskId}
+        onOpenChange={(open) => !open && setViewTaskId(null)}
+        isLoading={viewTaskLoading}
+        onEdit={(task) => {
+          setEditingTask(task);
+          setViewTaskId(null);
+        }}
+        onDelete={(task) => {
+          setOpenDelete(true);
+          setDeleteId(task.id);
+        }}
       />
     </div>
   );

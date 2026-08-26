@@ -55,16 +55,14 @@ export async function createTask(userId: string, data: CreateTaskPayloadT) {
 export async function getTaskById(userId: string, id: string) {
   await assertTaskAccess({ userId, taskId: id });
 
-  const task = await prisma.task.findUnique({
+  const taskWithUser = await prisma.task.findUnique({
     where: { id },
     select: {
       ...taskSelect,
-      user: { select: { id: true, email: true, name: true } },
+      user: { select: { id: true, email: true, name: true, avatarUrl: true } },
     },
   });
-
-  const { user, ...rest } = task!;
-  return { ...rest, created_by: user.name };
+  return taskWithUser;
 }
 
 function buildFilterWhere(filter: TaskQueryParams["filter"]) {

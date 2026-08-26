@@ -13,6 +13,12 @@ export type Task = {
   status: TaskUpdateStatusSchema["status"];
   createdAt: string;
   updatedAt: string;
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    avatarUrl: string | null;
+  }
 };
 
 export type TaskResponseT = {
