@@ -51,8 +51,8 @@ const formatDueDate = (dueDate: string | null) => {
     month: "short",
     day: "numeric",
     year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
+    // hour: "numeric",
+    // minute: "2-digit",
   }).format(new Date(dueDate));
 };
 
