@@ -194,7 +194,7 @@ export async function getTaskStats(userId: string) {
     deletedAt: null,
   };
 
-  const [upcoming, today, overdue, completed] = await Promise.all([
+  const [upcoming, today, overdue, completed, pending] = await Promise.all([
     prisma.task.count({
       where: {
         ...baseWhere,
@@ -238,6 +238,13 @@ export async function getTaskStats(userId: string) {
         status: TaskStatus.COMPLETED,
       },
     }),
+
+    prisma.task.count({
+      where: {
+        ...baseWhere,
+        status: TaskStatus.PENDING
+      }
+    })
   ]);
 
   return {
@@ -245,5 +252,6 @@ export async function getTaskStats(userId: string) {
     today,
     overdue,
     completed,
+    pending
   };
 }

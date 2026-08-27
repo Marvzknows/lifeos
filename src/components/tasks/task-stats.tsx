@@ -3,6 +3,7 @@ import {
   CheckCircle2,
   Clock3,
   AlertTriangle,
+  RotateCwFadingClock,
 } from "lucide-react";
 
 import { TaskStatCard } from "./task-stat-card";
@@ -27,7 +28,7 @@ export function TaskStats({ stats, isLoading }: Props) {
   }
 
   return (
-    <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+    <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-5">
       <TaskStatCard
         title="Today's Tasks"
         value={stats?.stats.today ?? 0}
@@ -59,6 +60,14 @@ export function TaskStats({ stats, isLoading }: Props) {
         icon={Clock3}
         iconBg="bg-sky-100 dark:bg-sky-950"
         iconColor="text-sky-600"
+      />
+
+      <TaskStatCard
+        title="Pending"
+        value={stats?.stats.pending ?? 0}
+        icon={RotateCwFadingClock}
+        iconBg="bg-yellow-100 dark:bg-yellow-950"
+        iconColor="text-yellow-600"
       />
     </section>
   );

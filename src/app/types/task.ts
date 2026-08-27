@@ -43,5 +43,6 @@ export type TaskStatsResponseT = {
     today: number;
     overdue: number;
     upcoming: number;
+    pending: number
   };
 };
