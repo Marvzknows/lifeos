@@ -195,7 +195,7 @@ const TasksPage = () => {
           })}
           data={data?.data ?? []}
           getRowId={(task) => task.id}
-          enableRowSelection={true}
+          // enableRowSelection={true}
           onRowSelectionChange={(rows) => console.log("selected:", rows)}
           onRowClick={handleRowClick}
           isLoading={isLoading}

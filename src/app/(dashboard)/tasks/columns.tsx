@@ -67,11 +67,16 @@ export const taskColumns = ({
       sortable: true,
       sortAccessor: (row) => row.title,
       cell: (row) => (
-        <div className="space-y-1.5">
-          <p className="font-medium leading-none">{row.title}</p>
+        <div className="min-w-0 max-w-60 space-y-1.5 sm:max-w-[320px]">
+          <p className="truncate font-medium leading-none" title={row.title}>
+            {row.title}
+          </p>
 
           {row.description && (
-            <p className="line-clamp-1 text-xs text-muted-foreground">
+            <p
+              className="truncate text-xs text-muted-foreground"
+              title={row.description}
+            >
               {row.description}
             </p>
           )}
