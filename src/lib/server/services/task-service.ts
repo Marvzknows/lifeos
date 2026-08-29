@@ -1,0 +1,257 @@
+import prisma from "@/lib/prisma";
+import { ForbiddenError, NotFoundError } from "../errors/errors";
+import { TaskQueryParams } from "@/schemas/task/task-query-schema";
+import { buildPaginatedResult } from "./pagination";
+import { UpdateTaskPayloadT } from "@/schemas/task/task-schema";
+import { TaskUpdateStatusSchema } from "@/schemas/task/task-update-status";
+import { TaskStatus } from "@/generated/prisma/browser";
+
+type CreateTaskPayloadT = {
+  title: string;
+  description?: string;
+  dueDate?: Date;
+};
+
+type AssertTaskAccessT = {
+  userId: string;
+  taskId: string;
+  allowDeleted?: boolean;
+};
+
+const taskSelect = {
+  id: true,
+  title: true,
+  priority: true,
+  dueDate: true,
+  status: true,
+  createdAt: true,
+  updatedAt: true,
+  description: true,
+};
+
+async function assertTaskAccess({
+  userId,
+  taskId,
+  allowDeleted,
+}: AssertTaskAccessT) {
+  const task = await prisma.task.findUnique({ where: { id: taskId } });
+
+  if (!task) throw new NotFoundError("Task not found");
+  if (!allowDeleted && task.deletedAt)
+    throw new NotFoundError("Task not found");
+  if (task.userId !== userId) {
+    throw new ForbiddenError("You don't have permission to access this task");
+  }
+
+  return task;
+}
+
+export async function createTask(userId: string, data: CreateTaskPayloadT) {
+  return prisma.task.create({
+    data: { ...data, userId },
+  });
+}
+
+export async function getTaskById(userId: string, id: string) {
+  await assertTaskAccess({ userId, taskId: id });
+
+  const taskWithUser = await prisma.task.findUnique({
+    where: { id },
+    select: {
+      ...taskSelect,
+      user: { select: { id: true, email: true, name: true, avatarUrl: true } },
+    },
+  });
+  return taskWithUser;
+}
+
+function buildFilterWhere(filter: TaskQueryParams["filter"]) {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const startOfTomorrow = new Date(startOfToday);
+  startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+
+  switch (filter) {
+    case "today":
+      return { dueDate: { gte: startOfToday, lte: startOfTomorrow } };
+    case "upcoming":
+      return { dueDate: { gt: startOfTomorrow } };
+    case "completed":
+      return { status: TaskStatus.COMPLETED };
+    case "pending":
+      return { status: TaskStatus.PENDING };
+    case "in_progress":
+      return { status: TaskStatus.IN_PROGRESS };
+    case "overdue":
+      return {
+        dueDate: { lt: startOfToday },
+        status: { not: TaskStatus.COMPLETED },
+      };
+    case "all":
+    default:
+      return {};
+  }
+}
+
+export async function getPaginatedTasks(
+  userId: string,
+  query: TaskQueryParams,
+) {
+  const { page, limit, priority, filter, search, dueDate } = query;
+  const skip = (page - 1) * limit;
+
+  const dueDateFilter = dueDate
+    ? (() => {
+      const startOfDay = new Date(dueDate);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const startOfNextDay = new Date(startOfDay);
+      startOfNextDay.setDate(startOfNextDay.getDate() + 1);
+
+      return { dueDate: { gte: startOfDay, lt: startOfNextDay } };
+    })()
+    : {};
+
+  const where = {
+    userId,
+    deletedAt: null,
+    ...(priority && { priority }),
+    ...(search && {
+      title: { contains: search, mode: "insensitive" as const },
+    }),
+    ...buildFilterWhere(filter),
+    ...dueDateFilter,
+  };
+
+  const [tasks, total] = await Promise.all([
+    prisma.task.findMany({
+      where,
+      select: taskSelect,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    }),
+    prisma.task.count({ where }),
+  ]);
+
+  return buildPaginatedResult(tasks, total, { page, limit });
+}
+
+export async function updateTask(
+  userId: string,
+  id: string,
+  data: UpdateTaskPayloadT,
+) {
+  await assertTaskAccess({ userId, taskId: id });
+
+  return prisma.task.update({
+    where: { id },
+    data,
+    select: taskSelect,
+  });
+}
+
+export async function softDeleteTask(userId: string, id: string) {
+  await assertTaskAccess({ userId, taskId: id });
+
+  return prisma.task.update({
+    where: { id },
+    data: { deletedAt: new Date() },
+    select: taskSelect,
+  });
+}
+
+export async function restoreTask(userId: string, id: string) {
+  await assertTaskAccess({ userId, taskId: id, allowDeleted: true });
+
+  return prisma.task.update({
+    where: { id },
+    data: { deletedAt: null },
+    select: taskSelect,
+  });
+}
+
+export async function updateTaskStatus(userId: string, id: string, status: TaskUpdateStatusSchema["status"]) {
+  await assertTaskAccess({ userId, taskId: id });
+
+  return prisma.task.update({
+    where: { id },
+    data: { status },
+    select: taskSelect,
+  });
+}
+
+export async function getTaskStats(userId: string) {
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const startOfTomorrow = new Date(startOfToday);
+  startOfTomorrow.setDate(startOfTomorrow.getDate() + 1);
+
+  const baseWhere = {
+    userId,
+    deletedAt: null,
+  };
+
+  const [upcoming, today, overdue, completed, pending] = await Promise.all([
+    prisma.task.count({
+      where: {
+        ...baseWhere,
+        status: {
+          not: TaskStatus.COMPLETED,
+        },
+        dueDate: {
+          gte: startOfTomorrow,
+        },
+      },
+    }),
+
+    prisma.task.count({
+      where: {
+        ...baseWhere,
+        status: {
+          not: TaskStatus.COMPLETED,
+        },
+        dueDate: {
+          gte: startOfToday,
+          lt: startOfTomorrow,
+        },
+      },
+    }),
+
+    prisma.task.count({
+      where: {
+        ...baseWhere,
+        status: {
+          not: TaskStatus.COMPLETED,
+        },
+        dueDate: {
+          lt: startOfToday,
+        },
+      },
+    }),
+
+    prisma.task.count({
+      where: {
+        ...baseWhere,
+        status: TaskStatus.COMPLETED,
+      },
+    }),
+
+    prisma.task.count({
+      where: {
+        ...baseWhere,
+        status: TaskStatus.PENDING
+      }
+    })
+  ]);
+
+  return {
+    upcoming,
+    today,
+    overdue,
+    completed,
+    pending
+  };
+}
