@@ -131,9 +131,11 @@ export function DataTable<TData>({
   const someSelected = ids.some((id) => selected.has(id));
 
   return (
-    <Card className={cn("space-y-4", className)}>
+    <Card className={cn("space-y-4 rounded-sm", className)}>
       <CardContent className="rounded-md p-0 space-y-3">
-        {header && <CardHeader className="border-b">{header}</CardHeader>}
+        {header && (
+          <CardHeader className="border-b p-0 m-0">{header}</CardHeader>
+        )}
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
@@ -152,7 +154,7 @@ export function DataTable<TData>({
                 <TableHead
                   key={col.id}
                   style={{ width: col.width }}
-                  className={col.className}
+                  className={cn("px-8 py-4", col.className)}
                 >
                   {col.sortable && col.sortAccessor ? (
                     <button
@@ -219,7 +221,10 @@ export function DataTable<TData>({
                       </TableCell>
                     )}
                     {columns.map((col) => (
-                      <TableCell key={col.id} className={col.className}>
+                      <TableCell
+                        key={col.id}
+                        className={cn("px-8 text-xs", col.className)}
+                      >
                         {col.cell(row)}
                       </TableCell>
                     ))}

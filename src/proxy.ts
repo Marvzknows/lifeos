@@ -4,7 +4,9 @@ import { NextResponse, type NextRequest } from "next/server";
 const PROTECTED_PREFIXES = ["/dashboard", "/tasks", "/notes", "/journal"];
 
 export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({ request: { headers: request.headers } });
+  const requestHeaders = new Headers(request.headers);
+
+  let response = NextResponse.next({ request: { headers: requestHeaders } });
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,7 +20,9 @@ export async function proxy(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value),
           );
-          response = NextResponse.next({ request });
+          response = NextResponse.next({
+            request: { headers: requestHeaders },
+          });
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options),
           );
@@ -32,11 +36,32 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
+  const isApiRoute = pathname.startsWith("/api/");
   const isProtectedRoute = PROTECTED_PREFIXES.some((prefix) =>
     pathname.startsWith(prefix),
   );
 
-  // Not logged in, trying to hit a protected route → bounce to login
+  // --- API routes: no redirects — return 401, or forward verified identity ---
+  if (isApiRoute) {
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    requestHeaders.set("x-user-id", user.id);
+    requestHeaders.set("x-user-email", user.email ?? "");
+
+    // Rebuild the response with updated headers, but carry over any
+    // session cookies Supabase refreshed above
+    const apiResponse = NextResponse.next({
+      request: { headers: requestHeaders },
+    });
+    response.cookies
+      .getAll()
+      .forEach((cookie) => apiResponse.cookies.set(cookie));
+    return apiResponse;
+  }
+
+  // --- Page routes: your existing redirect logic, unchanged ---
   if (isProtectedRoute && !user) {
     const redirectUrl = new URL("/login", request.url);
     redirectUrl.searchParams.set("redirectTo", pathname);

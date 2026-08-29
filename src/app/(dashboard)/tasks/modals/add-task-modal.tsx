@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Field,
   FieldError,
@@ -33,26 +34,11 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-
-import { taskFormSchema, TaskFormValues } from "../task-schema";
-
-function formatDatePPP(date: Date): string {
-  const day = date.getDate();
-  const suffix =
-    day % 10 === 1 && day !== 11
-      ? "st"
-      : day % 10 === 2 && day !== 12
-        ? "nd"
-        : day % 10 === 3 && day !== 13
-          ? "rd"
-          : "th";
-  const monthYear = new Intl.DateTimeFormat("en-US", {
-    month: "long",
-    year: "numeric",
-  }).format(date);
-  const [month, year] = monthYear.split(" ");
-  return `${month} ${day}${suffix}, ${year}`;
-}
+import {
+  taskFormSchema,
+  TaskFormValues,
+} from "@/schemas/task/task-form-schema";
+import { formatDatePPP } from "@/helpers/formatDatePPP";
 
 interface AddTaskModalProps {
   open: boolean;
@@ -71,6 +57,7 @@ export function AddTaskModal({
       title: "",
       priority: undefined,
       dueDate: undefined,
+      description: "",
     },
   });
 
@@ -131,9 +118,9 @@ export function AddTaskModal({
                       <SelectValue placeholder="Select priority" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Low">Low</SelectItem>
-                      <SelectItem value="Medium">Medium</SelectItem>
-                      <SelectItem value="High">High</SelectItem>
+                      <SelectItem value="LOW">Low</SelectItem>
+                      <SelectItem value="MEDIUM">Medium</SelectItem>
+                      <SelectItem value="HIGH">High</SelectItem>
                     </SelectContent>
                   </Select>
                   {fieldState.invalid && (
@@ -182,6 +169,29 @@ export function AddTaskModal({
                       />
                     </PopoverContent>
                   </Popover>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+
+            <Controller
+              name="description"
+              control={form.control}
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="add-task-description">
+                    Description
+                  </FieldLabel>
+                  <Textarea
+                    {...field}
+                    id="add-task-description"
+                    aria-invalid={fieldState.invalid}
+                    placeholder="Add any extra details about this task..."
+                    className="rounded-sm resize-none"
+                    rows={4}
+                  />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
                   )}

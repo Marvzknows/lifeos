@@ -68,8 +68,13 @@ function createApiClient(): AxiosInstance {
   instance.interceptors.response.use(
     (response) => response,
     async (error: AxiosError<ApiErrorResponseBody>) => {
-      if (error.response?.status === 401) {
-        if (typeof window !== "undefined") {
+      const isMeEndpoint = error.config?.url?.includes("/me");
+
+      if (error.response?.status === 401 && !isMeEndpoint) {
+        if (
+          typeof window !== "undefined" &&
+          window.location.pathname !== "/login"
+        ) {
           const supabase = createClient();
           await supabase.auth.signOut();
           window.location.href = "/login";

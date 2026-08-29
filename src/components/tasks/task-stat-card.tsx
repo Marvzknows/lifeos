@@ -23,12 +23,12 @@ export function TaskStatCard({
   //   trendLabel,
 }: TaskStatCardProps) {
   return (
-    <Card className="rounded-md">
+    <Card className="rounded-sm">
       <CardContent className="space-y-6 p-6">
         <div className="flex flex-row justify-between gap-4 md:justify-start">
           <div
             className={cn(
-              "flex h-14 w-14 items-center justify-center rounded-2xl",
+              "flex h-14 w-14 items-center justify-center rounded-lg",
               iconBg,
             )}
           >

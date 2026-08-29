@@ -1,8 +1,7 @@
 "use client";
 
 import { TaskStats } from "@/components/tasks/task-stats";
-import { useRouter } from "next/navigation";
-import { Task, taskColumns } from "./columns";
+import { taskColumns } from "./columns";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { ClipboardList, Trash2 } from "lucide-react";
@@ -10,134 +9,218 @@ import { useState } from "react";
 import { AddTaskModal } from "./modals/add-task-modal";
 import { toast } from "@/components/ui/toast";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
-import { TasksTableToolbar } from "./components/task-table-toolbar";
-import { TaskTab } from "./types";
+import TaskFilters from "./components/task-filters";
+import { useCreateTask, useDeleteTask, useTasks, useTaskStats, useUpdateTask, useUpdateTaskStatus, useViewTask } from "@/lib/api/services/hooks/tasks.hooks";
+import { Task, TaskPriority, TaskStatus } from "@/app/types/task";
+import { useDebounce } from "@/hooks/use-debounce";
+import { TaskFormValues } from "@/schemas/task/task-form-schema";
+import { EditTaskModal } from "./modals/edit-task-modal";
+import { TaskUpdateStatusSchema } from "@/schemas/task/task-update-status";
+import { capitalizeWords } from "@/helpers/capitalize-words";
+import { formatDateForApi } from "@/helpers/formatDateForApi";
+import { ViewTaskDialog } from "./components/task-view-details-modal";
 
-const tasks: Task[] = [
-  {
-    id: "1",
-    title: "Finish dashboard redesign",
-    tags: ["LifeOS", "Design"],
-    priority: "High",
-    dueDate: "2026-07-25T17:00:00",
-    dueDateLabel: "Today, 5:00 PM",
-    project: "LifeOS",
-    projectColor: "text-indigo-500",
-    completed: false,
-  },
-  {
-    id: "2",
-    title: "Review pull request #142",
-    tags: ["Work", "Development"],
-    priority: "Medium",
-    dueDate: "2026-07-25T15:00:00",
-    dueDateLabel: "Today, 3:00 PM",
-    project: "Work",
-    projectColor: "text-blue-500",
-    completed: true,
-  },
-  {
-    id: "3",
-    title: "Grocery shopping",
-    tags: ["Personal", "Errand"],
-    priority: "Medium",
-    dueDate: "2026-07-26T00:00:00",
-    dueDateLabel: "Tomorrow",
-    project: "Personal",
-    projectColor: "text-green-500",
-    completed: false,
-  },
-  {
-    id: "4",
-    title: "Write project documentation",
-    tags: ["LifeOS", "Documentation"],
-    priority: "Low",
-    dueDate: "2026-07-26T00:00:00",
-    dueDateLabel: "Tomorrow",
-    project: "LifeOS",
-    projectColor: "text-indigo-500",
-    completed: false,
-  },
-];
+const PAGE_SIZE = 10;
 
 const TasksPage = () => {
-  const router = useRouter();
+
   const [openDelete, setOpenDelete] = useState(false);
   const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<TaskTab>("all");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [viewTaskId, setViewTaskId] = useState<string | null>(null);
 
-  const handleMarkComplete = (id: string) => {
-    console.log(id);
-    toast.promise(new Promise((resolve) => setTimeout(resolve, 2000)), {
-      loading: "Marking task as complete...",
-      success: "Task marked as complete!",
+  // Filters
+  const [status, setStatus] = useState<TaskStatus>("all");
+  const [priority, setPriority] = useState<TaskPriority | "">("");
+  const [search, setSearch] = useState("");
+  const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
+  const [page, setPage] = useState(1);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+
+  const debouncedSearch = useDebounce(search);
+  const { data, isLoading } = useTasks({
+    page,
+    limit: PAGE_SIZE,
+    filter: status,
+    ...(debouncedSearch && { search: debouncedSearch }),
+    ...(priority && { priority }),
+    ...(dueDate && { dueDate: formatDateForApi(dueDate) }),
+  });
+
+  const { data: stats, isLoading: isLoadingStats } = useTaskStats();
+
+  const { mutateAsync: createTask, isPending: createTaskLoading } = useCreateTask();
+  const { mutateAsync: deleteTask, isPending: deleteTaskLoading } = useDeleteTask();
+  const { mutateAsync: updateTaskStatus, isPending: updateTaskStatusLoading } = useUpdateTaskStatus();
+  const { mutateAsync: updateTask, isPending: updateTaskLoading } = useUpdateTask();
+  const { data: viewTaskData, isLoading: viewTaskLoading } = useViewTask(viewTaskId ?? '');
+
+  const isLoadingHandlers = createTaskLoading
+    || deleteTaskLoading
+    || updateTaskStatusLoading
+    || updateTaskLoading
+    || viewTaskLoading;
+  // #region Handlers
+  const handleRowClick = (task: Task) => {
+    setViewTaskId(task.id);
+  };
+
+  const handleChangeTaskStatus = (id: string, status: TaskUpdateStatusSchema['status']) => {
+    if (!id) return
+    toast.promise(updateTaskStatus({ id, status }), {
+      loading: `Marking task as ${capitalizeWords(status)}...`,
+      success: {
+        title: "Task status updated",
+        description: "Your task status has been updated successfully.",
+      },
       error: "Failed to mark task as complete.",
     });
   };
 
   const handleDelete = () => {
+    if (!deleteId) return;
     setOpenDelete(false);
-    toast.promise(new Promise((resolve) => setTimeout(resolve, 2000)), {
+    toast.promise(deleteTask(deleteId), {
       loading: "Deleting task...",
-      success: "Task deleted!",
-      error: "Failed to delete task.",
+      success: () => {
+        setDeleteId(null);
+        return {
+          title: "Task deleted",
+          description: "Your task has been deleted successfully.",
+        };
+      },
+      error: () => {
+        return {
+          title: "Failed to delete task",
+          description: "Something went wrong.",
+        };
+      },
     });
   };
 
   const onDeleteTask = (id: string) => {
-    console.log("Delete task with id:", id);
+    setDeleteId(id);
     setOpenDelete(true);
   };
 
-  const filteredTasks = tasks.filter((task) => {
-    if (activeTab === "all") return true;
-    if (activeTab === "completed") return task.completed;
-    if (activeTab === "today") {
-      return !task.completed && task.dueDateLabel.startsWith("Today");
-    }
-    if (activeTab === "upcoming") {
-      return !task.completed && !task.dueDateLabel.startsWith("Today");
-    }
-    return true;
-  });
+  const onEditTask = (task: Task) => {
+    setEditingTask(task);
+  };
+
+  const handleStatusChange = (value: string | null) => {
+    setStatus((value ?? "all") as TaskStatus);
+    setPage(1);
+  };
+
+  const handlePriorityChange = (value: string | null) => {
+    setPriority((value ?? "") as TaskPriority | "");
+  };
+
+  const handleSearchChange = (value: string | null) => {
+    setSearch(value ?? "");
+    setPage(1);
+  };
+
+  const handleOnSubmitTask = (values: TaskFormValues) => {
+    toast.promise(createTask(values), {
+      loading: "Creating task...",
+      success: () => {
+        setIsAddTaskModalOpen(false);
+        return {
+          title: "Task created",
+          description: "Your task has been created successfully.",
+        };
+      },
+      error: (error) => {
+        return error?.message ?? "Failed to create task.";
+      },
+    });
+  };
+
+  const handleOnSubmitEditTask = (values: TaskFormValues) => {
+    if (!editingTask) return;
+
+    toast.promise(updateTask({ id: editingTask.id, data: values }), {
+      loading: "Saving changes...",
+      success: () => {
+        setEditingTask(null);
+        return {
+          title: "Task updated",
+          description: "Your task has been updated successfully.",
+        };
+      },
+      error: (error) => error?.message ?? "Failed to update task.",
+    });
+  };
+
+  const handleDueDateChange = (date?: Date) => {
+    setDueDate(date);
+    setPage(1);
+  };
+
+  const handleResetFilters = () => {
+    setStatus("all");
+    setPriority("");
+    setSearch("");
+    setDueDate(undefined);
+    setPage(1);
+  };
+  // #endregion Handlers
 
   return (
     <div className="space-y-6 p-6">
-      <TaskStats />
+      <TaskStats stats={stats} isLoading={isLoadingStats} />
 
       <div className="space-y-6">
         <DataTable
           header={
-            <TasksTableToolbar
-              value={activeTab}
-              onValueChange={setActiveTab}
+            <TaskFilters
               onAddTask={() => setIsAddTaskModalOpen(true)}
+              onStatusChange={handleStatusChange}
+              status={status}
+              onPriorityChange={handlePriorityChange}
+              priority={priority}
+              search={search}
+              onSearchChange={handleSearchChange}
+              isLoading={isLoadingHandlers}
+              dueDate={dueDate}
+              onDueDateChange={handleDueDateChange}
+              onResetFilters={handleResetFilters}
             />
           }
           columns={taskColumns({
-            onMarkComplete: handleMarkComplete,
+            handleChangeTaskStatus: handleChangeTaskStatus,
             onDeleteTask: onDeleteTask,
+            onEditTask,
           })}
-          data={filteredTasks}
+          data={data?.data ?? []}
           getRowId={(task) => task.id}
-          enableRowSelection
+          // enableRowSelection={true}
           onRowSelectionChange={(rows) => console.log("selected:", rows)}
-          onRowClick={(task) => router.push(`/tasks/${task.id}`)}
-          isLoading={false}
+          onRowClick={handleRowClick}
+          isLoading={isLoading}
         />
-        <DataTablePagination page={2} pageCount={20} onPageChange={() => {}} />
+
+        <DataTablePagination
+          page={data?.pagination?.page ?? 1}
+          pageCount={data?.pagination?.totalPages ?? 0}
+          onPageChange={(newPage) => setPage(newPage)}
+        />
       </div>
 
       {/* Modals */}
       <AddTaskModal
         open={isAddTaskModalOpen}
         onOpenChange={setIsAddTaskModalOpen}
-        onSubmit={() => {
-          toast.add({
-            title: "Task added",
-            description: "Your new task has been added.",
-          });
-        }}
+        onSubmit={handleOnSubmitTask}
+      />
+
+      <EditTaskModal
+        open={!!editingTask}
+        onOpenChange={(open) => !open && setEditingTask(null)}
+        task={editingTask}
+        onSubmit={handleOnSubmitEditTask}
+        isSubmitting={updateTaskLoading}
       />
 
       <ConfirmationDialog
@@ -154,6 +237,21 @@ const TasksPage = () => {
         confirmVariant="destructive"
         onConfirm={handleDelete}
         onCancel={() => setOpenDelete(false)}
+      />
+
+      <ViewTaskDialog
+        task={viewTaskData?.task ?? null}
+        open={!!viewTaskId}
+        onOpenChange={(open) => !open && setViewTaskId(null)}
+        isLoading={viewTaskLoading}
+        onEdit={(task) => {
+          setEditingTask(task);
+          setViewTaskId(null);
+        }}
+        onDelete={(task) => {
+          setOpenDelete(true);
+          setDeleteId(task.id);
+        }}
       />
     </div>
   );

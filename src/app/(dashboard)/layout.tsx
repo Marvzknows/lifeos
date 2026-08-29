@@ -34,7 +34,7 @@ export default function DashboardLayout({
   return (
     <SidebarProvider>
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <header className="flex justify-between h-16 shrink-0 items-center gap-2 border-b bg-red px-4">
           <div className="flex items-center gap-2">
             <SidebarTrigger className="-ml-1" />
@@ -61,7 +61,9 @@ export default function DashboardLayout({
             <ProfileDropdown />
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
+        <div className=" flex flex-1 flex-col gap-4 p-4 min-w-0 overflow-x-auto">
+          {children}
+        </div>
       </SidebarInset>
     </SidebarProvider>
   );
