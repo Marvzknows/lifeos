@@ -1,5 +1,7 @@
 "use client";
 
+import { Fragment } from "react";
+import { usePathname } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
 import ProfileDropdown from "@/components/profile-dropdown";
 import { Separator } from "@/components/ui/separator";
@@ -20,12 +22,42 @@ import { useAuth } from "@/context/auth-context";
 import { FullPageLoader } from "@/components/full-page-loader";
 import { ModeToggle } from "@/components/mode-toggle";
 
+const SEGMENT_LABELS: Record<string, string> = {
+  dashboard: "Dashboard",
+  tasks: "Tasks",
+  settings: "Settings",
+  profile: "Profile",
+};
+
+function toLabel(segment: string) {
+  if (SEGMENT_LABELS[segment]) return SEGMENT_LABELS[segment];
+  // strip dynamic-looking ids, title-case the rest
+  return segment
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function useBreadcrumbs() {
+  const pathname = usePathname();
+  const segments = pathname.split("/").filter(Boolean);
+
+  return segments.map((segment, index) => {
+    const href = "/" + segments.slice(0, index + 1).join("/");
+    return {
+      href,
+      label: toLabel(segment),
+      isLast: index === segments.length - 1,
+    };
+  });
+}
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const { isLoading } = useAuth();
+  const breadcrumbs = useBreadcrumbs();
 
   if (isLoading) {
     return <FullPageLoader />;
@@ -35,7 +67,7 @@ export default function DashboardLayout({
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset className="min-w-0">
-        <header className="flex justify-between h-16 shrink-0 items-center gap-2 border-b bg-red px-4">
+        <header className="flex justify-between h-16 shrink-0 items-center gap-2 border-b bg-background px-4">
           <div className="flex items-center gap-2">
             <SidebarTrigger className="-ml-1" />
             <Separator
@@ -44,15 +76,22 @@ export default function DashboardLayout({
             />
             <Breadcrumb>
               <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    Build Your Application
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                </BreadcrumbItem>
+                {breadcrumbs.map((crumb) => (
+                  <Fragment key={crumb.href}>
+                    <BreadcrumbItem className="hidden md:block">
+                      {crumb.isLast ? (
+                        <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
+                      ) : (
+                        <BreadcrumbLink href={crumb.href}>
+                          {crumb.label}
+                        </BreadcrumbLink>
+                      )}
+                    </BreadcrumbItem>
+                    {!crumb.isLast && (
+                      <BreadcrumbSeparator className="hidden md:block" />
+                    )}
+                  </Fragment>
+                ))}
               </BreadcrumbList>
             </Breadcrumb>
           </div>
@@ -61,7 +100,7 @@ export default function DashboardLayout({
             <ProfileDropdown />
           </div>
         </header>
-        <div className=" flex flex-1 flex-col gap-4 p-4 min-w-0 overflow-x-auto">
+        <div className="flex flex-1 flex-col gap-4 p-4 min-w-0 overflow-x-auto">
           {children}
         </div>
       </SidebarInset>
