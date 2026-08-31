@@ -43,11 +43,11 @@ const data = {
     {
       title: "PRODUCTIVITY",
       items: [
-        { title: "Tasks", url: "/tasks", icon: CheckSquare },
-        { title: "Calendar", url: "#", icon: Calendar },
-        { title: "Notes", url: "/notes", icon: NotebookText },
-        { title: "Goals", url: "#", icon: Target },
-        { title: "Journal", url: "/journal", icon: BookOpen },
+        { title: "Tasks", url: "/tasks", icon: CheckSquare, disable: false },
+        { title: "Calendar", url: "#", icon: Calendar, disable: true },
+        { title: "Notes", url: "/notes", icon: NotebookText, disable: false },
+        { title: "Goals", url: "#", icon: Target, disable: true },
+        { title: "Journal", url: "/journal", icon: BookOpen, disable: false },
       ],
     },
     {
@@ -55,12 +55,13 @@ const data = {
       items: [
         {
           title: "Transactions",
-          url: "#",
+          url: "/transactions",
 
           icon: ArrowLeftRight,
+          disable: false
         },
-        { title: "Budget", url: "#", icon: Wallet },
-        { title: "Categories", url: "#", icon: ChartBarStacked },
+        { title: "Budget", url: "/budget", icon: Wallet, disable: false },
+        { title: "Categories", url: "/categories", icon: ChartBarStacked, disable: false },
       ],
     },
   ],
@@ -115,7 +116,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton
                       isActive={pathname === item.url}
-                      render={<Link href={item.url} />}
+                      render={<Link aria-disabled={item.disable} href={item.url} />}
                       onClick={handleNavigation}
                     >
                       <item.icon />
