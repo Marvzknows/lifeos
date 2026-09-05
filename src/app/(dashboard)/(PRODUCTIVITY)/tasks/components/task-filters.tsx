@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { taskPriorityFilterOptions, taskStatusFilterOptions } from "../types";
-import { CalendarIcon, Plus, Search, X } from "lucide-react";
+import { CalendarIcon, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { capitalizeWords } from "@/helpers/capitalize-words";
@@ -35,7 +35,7 @@ type Props = {
 };
 
 const TaskFilters = ({
-  onAddTask,
+  // onAddTask,
   onStatusChange,
   status,
   onPriorityChange,
@@ -60,7 +60,7 @@ const TaskFilters = ({
     <div className="border-b">
       {/* Header */}
       <div className="flex flex-col gap-4 px-4 py-4 sm:px-6 md:flex-row md:items-center md:justify-between">
-        <div className="shrink-0">
+        {/* <div className="shrink-0">
           <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
             Tasks
           </h1>
@@ -68,7 +68,7 @@ const TaskFilters = ({
           <p className="mt-1 text-sm text-muted-foreground">
             Organize and keep track of your tasks.
           </p>
-        </div>
+        </div> */}
 
         <div className="flex w-full flex-col gap-2.5 sm:flex-row md:w-auto">
           <div className="relative w-full sm:w-64">
@@ -84,14 +84,14 @@ const TaskFilters = ({
             />
           </div>
 
-          <Button
+          {/* <Button
             onClick={onAddTask}
             className="h-8 text-xs w-full rounded-sm bg-indigo-600 px-3 text-white hover:bg-indigo-500 sm:w-auto"
             disabled={isLoading}
           >
             <Plus className="mr-2 h-4 w-4" />
             New Task
-          </Button>
+          </Button> */}
         </div>
       </div>
 
