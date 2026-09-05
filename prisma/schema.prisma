@@ -29,6 +29,11 @@ enum TaskStatus {
   COMPLETED
 }
 
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
 model User {
   id        String   @id @db.Uuid
   email     String   @unique
@@ -38,7 +43,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  tasks Task[]
+  tasks      Task[]
+  categories Category[]
 }
 
 model Task {
@@ -55,3 +61,24 @@ model Task {
   userId String @db.Uuid
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+// #region FINANCE
+
+model Category {
+  id    String       @id @default(uuid()) @db.Uuid
+  name  String
+  type  CategoryType
+  icon  String?
+  color String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name, type])
+}
+
+// #endregion
