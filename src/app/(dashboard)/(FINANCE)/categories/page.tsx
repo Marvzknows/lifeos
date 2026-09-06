@@ -1,104 +1,29 @@
 "use client";
 
-import * as React from "react";
-import { Plus } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
-import { cn } from "@/lib/utils";
+import { CategoryT } from "./types";
+import { CategoryType } from "@/generated/prisma/enums";
+import CategorySection from "./components/category-section";
 
-type CategoryType = "INCOME" | "EXPENSE";
+const now = new Date().toISOString();
 
-interface Category {
-    id: string;
-    name: string;
-    type: CategoryType;
-    color: string | null;
-}
-
-const dummyCategories: Category[] = [
-    { id: "1", name: "Salary", type: "INCOME", color: "#16a34a" },
-    { id: "2", name: "Freelance", type: "INCOME", color: "#0ea5e9" },
-    { id: "3", name: "Investments", type: "INCOME", color: "#0d9488" },
-    { id: "4", name: "Rent", type: "EXPENSE", color: "#dc2626" },
-    { id: "5", name: "Groceries", type: "EXPENSE", color: "#f97316" },
-    { id: "6", name: "Utilities", type: "EXPENSE", color: "#eab308" },
-    { id: "7", name: "Transportation", type: "EXPENSE", color: "#7c3aed" },
-    { id: "8", name: "Entertainment", type: "EXPENSE", color: "#ec4899" },
+// icon values are lucide's kebab-case names, e.g. "shopping-cart"
+const dummyCategories: CategoryT[] = [
+    { id: "1", name: "Salary", type: "INCOME", icon: "wallet", color: "#16a34a", createdAt: now, updatedAt: now, deletedAt: null },
+    { id: "2", name: "Freelance", type: "INCOME", icon: "briefcase", color: "#0ea5e9", createdAt: now, updatedAt: now, deletedAt: null },
+    { id: "3", name: "Investments", type: "INCOME", icon: "trending-up", color: "#0d9488", createdAt: now, updatedAt: now, deletedAt: null },
+    { id: "4", name: "Rent", type: "EXPENSE", icon: "home", color: "#dc2626", createdAt: now, updatedAt: now, deletedAt: null },
+    { id: "5", name: "Groceries", type: "EXPENSE", icon: "shopping-cart", color: "#f97316", createdAt: now, updatedAt: now, deletedAt: null },
+    { id: "6", name: "Utilities", type: "EXPENSE", icon: "zap", color: "#eab308", createdAt: now, updatedAt: now, deletedAt: null },
+    { id: "7", name: "Transportation", type: "EXPENSE", icon: "car", color: "#7c3aed", createdAt: now, updatedAt: now, deletedAt: null },
+    { id: "8", name: "Entertainment", type: "EXPENSE", icon: "clapperboard", color: "#ec4899", createdAt: now, updatedAt: now, deletedAt: null },
 ];
-
-function CategoryPill({
-    category,
-    onClick,
-}: {
-    category: Category;
-    onClick: (category: Category) => void;
-}) {
-    return (
-        <button
-            type="button"
-            onClick={() => onClick(category)}
-            className={cn(
-                "inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1.5",
-                "text-sm transition-colors hover:bg-accent",
-            )}
-        >
-            <span
-                className="size-2.5 shrink-0 rounded-full"
-                style={{ backgroundColor: category.color ?? "#94a3b8" }}
-            />
-            {category.name}
-        </button>
-    );
-}
-
-function AddCategoryPill({ onClick }: { onClick: () => void }) {
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border border-dashed px-3 py-1.5",
-                "text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
-            )}
-        >
-            <Plus className="size-3.5" />
-            Add
-        </button>
-    );
-}
-
-function CategorySection({
-    title,
-    categories,
-    onCategoryClick,
-    onAddClick,
-}: {
-    title: string;
-    categories: Category[];
-    onCategoryClick: (category: Category) => void;
-    onAddClick: () => void;
-}) {
-    return (
-        <div className="space-y-3">
-            <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
-            <div className="flex flex-wrap gap-2">
-                {categories.map((category) => (
-                    <CategoryPill
-                        key={category.id}
-                        category={category}
-                        onClick={onCategoryClick}
-                    />
-                ))}
-                <AddCategoryPill onClick={onAddClick} />
-            </div>
-        </div>
-    );
-}
 
 const CategoriesPage = () => {
     const income = dummyCategories.filter((c) => c.type === "INCOME");
     const expense = dummyCategories.filter((c) => c.type === "EXPENSE");
 
-    function handleCategoryClick(category: Category) {
+    function handleCategoryClick(category: CategoryT) {
         // TODO: open edit dialog, pre-filled with this category
         console.log("edit category", category);
     }
