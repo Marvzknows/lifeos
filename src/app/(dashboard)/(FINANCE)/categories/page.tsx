@@ -7,6 +7,7 @@ import { CategoryType } from "@/generated/prisma/enums";
 import CategorySection from "./components/category-section";
 import { CategoryFormValues } from "@/schemas/finance/category-schema";
 import { AddCategoryModal } from "./components/add-category-modal";
+import { CategoryStats } from "./components/category-stats";
 
 const now = new Date().toISOString();
 
@@ -59,6 +60,12 @@ const CategoriesPage = () => {
             <PageHeader
                 title="Categories"
                 description="Organize your income and expenses with custom categories."
+            />
+
+            <CategoryStats
+                total={categories.length}
+                income={income.length}
+                expense={expense.length}
             />
 
             <div className="space-y-6">
