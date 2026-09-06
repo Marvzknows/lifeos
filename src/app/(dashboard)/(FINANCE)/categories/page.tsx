@@ -1,13 +1,15 @@
 "use client";
 
+import { useState } from "react";
 import { PageHeader } from "@/components/page-header";
 import { CategoryT } from "./types";
 import { CategoryType } from "@/generated/prisma/enums";
 import CategorySection from "./components/category-section";
+import { CategoryFormValues } from "@/schemas/finance/category-schema";
+import { AddCategoryModal } from "./components/add-category-modal";
 
 const now = new Date().toISOString();
 
-// icon values are lucide's kebab-case names, e.g. "shopping-cart"
 const dummyCategories: CategoryT[] = [
     { id: "1", name: "Salary", type: "INCOME", icon: "wallet", color: "#16a34a", createdAt: now, updatedAt: now, deletedAt: null },
     { id: "2", name: "Freelance", type: "INCOME", icon: "briefcase", color: "#0ea5e9", createdAt: now, updatedAt: now, deletedAt: null },
@@ -20,8 +22,12 @@ const dummyCategories: CategoryT[] = [
 ];
 
 const CategoriesPage = () => {
-    const income = dummyCategories.filter((c) => c.type === "INCOME");
-    const expense = dummyCategories.filter((c) => c.type === "EXPENSE");
+    const [categories, setCategories] = useState<CategoryT[]>(dummyCategories);
+    const [modalOpen, setModalOpen] = useState(false);
+    const [modalDefaultType, setModalDefaultType] = useState<CategoryType>("EXPENSE");
+
+    const income = categories.filter((c) => c.type === "INCOME");
+    const expense = categories.filter((c) => c.type === "EXPENSE");
 
     function handleCategoryClick(category: CategoryT) {
         // TODO: open edit dialog, pre-filled with this category
@@ -29,8 +35,23 @@ const CategoriesPage = () => {
     }
 
     function handleAddClick(type: CategoryType) {
-        // TODO: open add dialog, pre-selecting this type
-        console.log("add category", type);
+        setModalDefaultType(type);
+        setModalOpen(true);
+    }
+
+    function handleAddCategory(values: CategoryFormValues) {
+        // TODO: replace with an actual mutation (React Query) once the API route exists
+        const newCategory: CategoryT = {
+            id: crypto.randomUUID(),
+            name: values.name,
+            type: values.type,
+            icon: values.icon,
+            color: values.color,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            deletedAt: null,
+        };
+        setCategories((prev) => [...prev, newCategory]);
     }
 
     return (
@@ -54,6 +75,13 @@ const CategoriesPage = () => {
                     onAddClick={() => handleAddClick("EXPENSE")}
                 />
             </div>
+
+            <AddCategoryModal
+                open={modalOpen}
+                onOpenChange={setModalOpen}
+                onSubmit={handleAddCategory}
+                defaultType={modalDefaultType}
+            />
         </div>
     );
 };
