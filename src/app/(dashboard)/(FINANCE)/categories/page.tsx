@@ -8,6 +8,7 @@ import CategorySection from "./components/category-section";
 import { CategoryFormValues } from "@/schemas/finance/category-schema";
 import { AddCategoryModal } from "./components/add-category-modal";
 import { CategoryStats } from "./components/category-stats";
+import { toast } from "@/components/ui/toast";
 
 const now = new Date().toISOString();
 
@@ -26,33 +27,56 @@ const CategoriesPage = () => {
     const [categories, setCategories] = useState<CategoryT[]>(dummyCategories);
     const [modalOpen, setModalOpen] = useState(false);
     const [modalDefaultType, setModalDefaultType] = useState<CategoryType>("EXPENSE");
+    const [editingCategory, setEditingCategory] = useState<CategoryT | null>(null);
 
     const income = categories.filter((c) => c.type === "INCOME");
     const expense = categories.filter((c) => c.type === "EXPENSE");
 
     function handleCategoryClick(category: CategoryT) {
-        // TODO: open edit dialog, pre-filled with this category
-        console.log("edit category", category);
+        setEditingCategory(category);
+        setModalOpen(true);
     }
 
     function handleAddClick(type: CategoryType) {
+        setEditingCategory(null);
         setModalDefaultType(type);
         setModalOpen(true);
     }
 
-    function handleAddCategory(values: CategoryFormValues) {
-        // TODO: replace with an actual mutation (React Query) once the API route exists
-        const newCategory: CategoryT = {
-            id: crypto.randomUUID(),
-            name: values.name,
-            type: values.type,
-            icon: values.icon,
-            color: values.color,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            deletedAt: null,
-        };
-        setCategories((prev) => [...prev, newCategory]);
+    function handleDeleteCategory(category: CategoryT) {
+        setCategories((prev) => prev.filter((c) => c.id !== category.id));
+
+        toast.add({ title: `"${category.name}" deleted`, });
+    }
+
+    function handleSubmitCategory(values: CategoryFormValues) {
+        if (editingCategory) {
+            // Edit mode: update the existing category in place.
+            setCategories((prev) =>
+                prev.map((c) =>
+                    c.id === editingCategory.id
+                        ? {
+                            ...c,
+                            ...values,
+                            updatedAt: new Date().toISOString(),
+                        }
+                        : c,
+                ),
+            );
+        } else {
+            // Add mode: append a new category.
+            const newCategory: CategoryT = {
+                id: crypto.randomUUID(),
+                name: values.name,
+                type: values.type,
+                icon: values.icon,
+                color: values.color,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                deletedAt: null,
+            };
+            setCategories((prev) => [...prev, newCategory]);
+        }
     }
 
     return (
@@ -74,20 +98,24 @@ const CategoriesPage = () => {
                     categories={income}
                     onCategoryClick={handleCategoryClick}
                     onAddClick={() => handleAddClick("INCOME")}
+                    onDeleteCategory={handleDeleteCategory}
                 />
                 <CategorySection
                     title="Expense"
                     categories={expense}
                     onCategoryClick={handleCategoryClick}
                     onAddClick={() => handleAddClick("EXPENSE")}
+                    onDeleteCategory={handleDeleteCategory}
                 />
             </div>
 
             <AddCategoryModal
                 open={modalOpen}
                 onOpenChange={setModalOpen}
-                onSubmit={handleAddCategory}
+                onSubmit={handleSubmitCategory}
                 defaultType={modalDefaultType}
+                category={editingCategory ?? undefined}
+                onDelete={handleDeleteCategory}
             />
         </div>
     );

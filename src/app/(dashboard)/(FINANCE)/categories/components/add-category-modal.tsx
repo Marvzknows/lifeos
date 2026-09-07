@@ -2,8 +2,8 @@
 
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useForm } from "react-hook-form";
-import { Check } from "lucide-react";
+import { Controller, useForm, useWatch } from "react-hook-form";
+import { Check, Trash2 } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -28,30 +28,68 @@ import {
 } from "@/components/ui/popover";
 import { categoryFormSchema, CategoryFormValues } from "@/schemas/finance/category-schema";
 import { IconPicker } from "./icon-picker";
-import { CategoryType, COLOR_OPTIONS } from "../types";
+import { CategoryT } from "../types";
 
-type AddCategoryModalProps = {
+const COLOR_OPTIONS = [
+    { name: "Purple", value: "#7F77DD" },
+    { name: "Teal", value: "#1D9E75" },
+    { name: "Coral", value: "#D85A30" },
+    { name: "Pink", value: "#D4537E" },
+    { name: "Blue", value: "#378ADD" },
+    { name: "Green", value: "#639922" },
+    { name: "Amber", value: "#BA7517" },
+    { name: "Red", value: "#E24B4A" },
+    { name: "Gray", value: "#888780" },
+];
+
+interface AddCategoryModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onSubmit?: (values: CategoryFormValues) => void;
-    defaultType?: CategoryType;
-};
+    /** Pre-selects Income/Expense when opened from a specific section's "+ Add" pill. */
+    defaultType?: CategoryFormValues["type"];
+    /** When set, the modal opens pre-filled in edit mode instead of create mode. */
+    category?: CategoryT;
+    /** Only relevant in edit mode — shows a "Delete category" action in the footer. */
+    onDelete?: (category: CategoryT) => void;
+}
+
+function getDefaultValues(
+    category: CategoryT | undefined,
+    defaultType: CategoryFormValues["type"] | undefined,
+): CategoryFormValues {
+    if (category) {
+        return {
+            name: category.name,
+            type: category.type,
+            icon: category.icon ?? "",
+            color: category.color ?? "",
+        };
+    }
+    return {
+        name: "",
+        type: defaultType ?? "EXPENSE",
+        icon: "",
+        color: "",
+    };
+}
 
 export function AddCategoryModal({
     open,
     onOpenChange,
     onSubmit,
     defaultType,
+    category,
+    onDelete,
 }: AddCategoryModalProps) {
+    const isEditMode = Boolean(category);
+
     const form = useForm<CategoryFormValues>({
         resolver: zodResolver(categoryFormSchema),
-        defaultValues: {
-            name: "",
-            type: defaultType ?? "EXPENSE",
-            icon: "",
-            color: "",
-        },
+        defaultValues: getDefaultValues(category, defaultType),
     });
+
+    const type = useWatch({ control: form.control, name: "type" });
 
     function handleSubmit(values: CategoryFormValues) {
         onSubmit?.(values);
@@ -60,27 +98,30 @@ export function AddCategoryModal({
 
     React.useEffect(() => {
         if (open) {
-            form.reset({
-                name: "",
-                type: defaultType ?? "EXPENSE",
-                icon: "",
-                color: "",
-            });
+            form.reset(getDefaultValues(category, defaultType));
         }
-    }, [open, defaultType, form]);
+        // category/defaultType are read fresh each time the modal opens, not
+        // tracked reactively while it's open — re-opening for a different
+        // category is what should trigger the reset, not every render.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [open]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="w-lg">
                 <DialogHeader>
-                    <DialogTitle>Add category</DialogTitle>
+                    <DialogTitle>
+                        {isEditMode ? "Edit category" : "Add category"}
+                    </DialogTitle>
                     <DialogDescription>
-                        Create a category to organize your income and expenses.
+                        {isEditMode
+                            ? "Update this category's name, type, icon, or color."
+                            : "Create a category to organize your income and expenses."}
                     </DialogDescription>
                 </DialogHeader>
 
                 <form
-                    id="add-category-form"
+                    id="category-form"
                     onSubmit={form.handleSubmit(handleSubmit)}
                 >
                     <FieldGroup>
@@ -89,10 +130,10 @@ export function AddCategoryModal({
                             control={form.control}
                             render={({ field, fieldState }) => (
                                 <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel htmlFor="add-category-name">Name</FieldLabel>
+                                    <FieldLabel htmlFor="category-name">Name</FieldLabel>
                                     <Input
                                         {...field}
-                                        id="add-category-name"
+                                        id="category-name"
                                         aria-invalid={fieldState.invalid}
                                         placeholder="e.g. Groceries"
                                         autoComplete="off"
@@ -110,9 +151,9 @@ export function AddCategoryModal({
                             control={form.control}
                             render={({ field, fieldState }) => (
                                 <Field data-invalid={fieldState.invalid}>
-                                    <FieldLabel htmlFor="add-category-type">Type</FieldLabel>
+                                    <FieldLabel htmlFor="category-type">Type</FieldLabel>
                                     <ToggleGroup
-                                        id="add-category-type"
+                                        id="category-type"
                                         value={field.value ? [field.value] : []}
                                         onValueChange={(value: string[]) => {
                                             if (value[0]) field.onChange(value[0]);
@@ -139,11 +180,12 @@ export function AddCategoryModal({
                                 control={form.control}
                                 render={({ field, fieldState }) => (
                                     <Field data-invalid={fieldState.invalid} className="flex-1">
-                                        <FieldLabel htmlFor="add-category-icon">Icon</FieldLabel>
+                                        <FieldLabel htmlFor="category-icon">Icon</FieldLabel>
                                         <IconPicker
-                                            id="add-category-icon"
+                                            id="category-icon"
                                             value={field.value}
                                             onChange={field.onChange}
+                                            type={type}
                                             invalid={fieldState.invalid}
                                         />
                                         {fieldState.invalid && <FieldError errors={[fieldState.error]} />}
@@ -156,15 +198,13 @@ export function AddCategoryModal({
                                 control={form.control}
                                 render={({ field, fieldState }) => (
                                     <Field data-invalid={fieldState.invalid} className="flex-1">
-                                        <FieldLabel htmlFor="add-category-color">
-                                            Color
-                                        </FieldLabel>
+                                        <FieldLabel htmlFor="category-color">Color</FieldLabel>
                                         <Popover>
                                             <PopoverTrigger
                                                 render={
                                                     <Button
                                                         type="button"
-                                                        id="add-category-color"
+                                                        id="category-color"
                                                         variant="outline"
                                                         aria-invalid={fieldState.invalid}
                                                         className="w-full justify-start gap-2 rounded-sm font-normal"
@@ -220,17 +260,35 @@ export function AddCategoryModal({
                     </FieldGroup>
                 </form>
 
-                <DialogFooter className="pt-2 bg-transparent border-0">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => onOpenChange(false)}
-                    >
-                        Cancel
-                    </Button>
-                    <Button type="submit" form="add-category-form">
-                        Create category
-                    </Button>
+                <DialogFooter className="pt-2 bg-transparent border-0 sm:justify-between">
+                    {isEditMode && onDelete ? (
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            onClick={() => {
+                                onDelete(category!);
+                                onOpenChange(false);
+                            }}
+                        >
+                            <Trash2 className="size-4" />
+                            Delete category
+                        </Button>
+                    ) : (
+                        <span />
+                    )}
+                    <div className="flex gap-2">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button className="h-8 text-xs w-full rounded-sm bg-indigo-600 px-3 text-white hover:bg-indigo-500 sm:w-auto" type="submit" form="category-form">
+                            {isEditMode ? "Save changes" : "Create category"}
+                        </Button>
+                    </div>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
