@@ -6,3 +6,13 @@ export async function createFinanceCategory(userId: string, data: CreateFinanceC
         data: { ...data, userId },
     });
 }
+
+export async function getFinanceCategoriesList(userId: string) {
+    const income = await prisma.category.findMany({
+        where: { userId, type: "INCOME" },
+    });
+    const expense = await prisma.category.findMany({
+        where: { userId, type: "EXPENSE" },
+    });
+    return { income, expense };
+}
