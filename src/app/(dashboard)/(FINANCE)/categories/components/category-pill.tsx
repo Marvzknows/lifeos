@@ -1,21 +1,28 @@
+"use client";
+
+import { X } from "lucide-react";
+import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { cn } from "@/lib/utils";
 import { CategoryT } from "../types";
-import { DynamicIcon, IconName } from "lucide-react/dynamic";
 
 const CategoryPill = ({
     category,
     onClick,
+    onDelete,
 }: {
     category: CategoryT;
     onClick: (category: CategoryT) => void;
+    onDelete: (category: CategoryT) => void;
 }) => {
     return (
-        <button
-            type="button"
+        <div
+            role="button"
+            tabIndex={0}
             onClick={() => onClick(category)}
+            onKeyDown={(e) => e.key === "Enter" && onClick(category)}
             className={cn(
-                "inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1.5",
-                "text-sm transition-colors hover:bg-accent",
+                "group relative inline-flex items-center gap-2 rounded-full border bg-card py-1.5 pl-3 pr-2",
+                "cursor-pointer text-sm transition-colors hover:bg-accent",
             )}
         >
             <span
@@ -25,11 +32,27 @@ const CategoryPill = ({
                 <DynamicIcon
                     name={(category.icon ?? "circle") as IconName}
                     className="size-3"
-                    color={category.color ?? "#94a3b8"}
+                    style={{ color: category.color ?? "#94a3b8" }}
                 />
             </span>
-            {category.name}
-        </button>
+            <span className="pr-1">{category.name}</span>
+            <button
+                type="button"
+                onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(category);
+                }}
+                aria-label={`Delete ${category.name}`}
+                className={cn(
+                    "flex size-4 shrink-0 items-center justify-center rounded-full text-muted-foreground",
+                    "opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive",
+                    "supports-[hover:hover]:opacity-0 supports-[hover:hover]:group-hover:opacity-100",
+                    "focus-visible:opacity-100",
+                )}
+            >
+                <X className="size-3" />
+            </button>
+        </div>
     );
 }
 

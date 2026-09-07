@@ -7,11 +7,13 @@ const CategorySection = ({
     categories,
     onCategoryClick,
     onAddClick,
+    onDeleteCategory,
 }: {
     title: string;
     categories: CategoryT[];
     onCategoryClick: (category: CategoryT) => void;
     onAddClick: () => void;
+    onDeleteCategory: (category: CategoryT) => void;
 }) => {
     return (
         <div className="space-y-3">
@@ -22,6 +24,7 @@ const CategorySection = ({
                         key={category.id}
                         category={category}
                         onClick={onCategoryClick}
+                        onDelete={onDeleteCategory}
                     />
                 ))}
                 <AddCategoryPill onClick={onAddClick} />
