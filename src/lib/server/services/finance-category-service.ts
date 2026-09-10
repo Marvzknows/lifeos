@@ -53,3 +53,35 @@ export async function updateFinanceCategory(
         data,
     });
 }
+
+export async function getFinanceCategoryById(userId: string, categoryId: string) {
+    return await assertCategoryAccess({ userId, categoryId });
+}
+
+export async function softDeleteFinanceCategory(userId: string, categoryId: string) {
+    await assertCategoryAccess({ userId, categoryId });
+
+    return await prisma.category.update({
+        where: { id: categoryId, userId },
+        data: { deletedAt: new Date() },
+    });
+}
+
+export async function restoreFinanceCategory(userId: string, categoryId: string) {
+    const category = await assertCategoryAccess({ userId, categoryId, allowDeleted: true });
+
+    if (!category.deletedAt) return category;
+
+    return await prisma.category.update({
+        where: { id: categoryId, userId },
+        data: { deletedAt: null },
+    });
+}
+
+export async function hardDeleteFinanceCategory(userId: string, categoryId: string) {
+    await assertCategoryAccess({ userId, categoryId, allowDeleted: true });
+
+    return await prisma.category.delete({
+        where: { id: categoryId, userId },
+    });
+}
