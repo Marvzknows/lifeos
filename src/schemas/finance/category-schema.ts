@@ -18,6 +18,9 @@ export const createFinanceCategorySchema = z.object({
 
 export type CreateFinanceCategoryPayloadT = z.infer<typeof createFinanceCategorySchema>;
 
+export const updateFinanceCategorySchema = createFinanceCategorySchema.partial();
+export type UpdateFinanceCategoryPayloadT = z.infer<typeof updateFinanceCategorySchema>;
+
 export const categoryFormSchema = z.object({
     name: z
         .string()
