@@ -141,7 +141,6 @@ const CategoriesPage = () => {
                 onSubmit={handleSubmitCategory}
                 defaultType={modalDefaultType}
                 category={editingCategory ?? undefined}
-                onDelete={() => handleDeleteCategory(deleteId ?? "")}
                 isLoading={isCreating || isUpdating}
             />
 
