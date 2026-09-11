@@ -3,6 +3,8 @@ export type FinanceCategoryT = {
     userId: string;
     name: string;
     type: FinanceCategoryTypeT;
+    icon: string | null;
+    color: string | null;
     createdAt: Date;
     updatedAt: Date;
     deletedAt?: Date | null;

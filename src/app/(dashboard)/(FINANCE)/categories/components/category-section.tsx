@@ -1,4 +1,4 @@
-import { CategoryT } from "../types";
+import { FinanceCategoryT } from "@/app/types/finanace-category";
 import AddCategoryPill from "./add-category-pill";
 import CategoryPill from "./category-pill";
 
@@ -10,10 +10,10 @@ const CategorySection = ({
     onDeleteCategory,
 }: {
     title: string;
-    categories: CategoryT[];
-    onCategoryClick: (category: CategoryT) => void;
+    categories: FinanceCategoryT[];
+    onCategoryClick: (category: FinanceCategoryT) => void;
     onAddClick: () => void;
-    onDeleteCategory: (category: CategoryT) => void;
+    onDeleteCategory: (category: FinanceCategoryT) => void;
 }) => {
     return (
         <div className="space-y-3">

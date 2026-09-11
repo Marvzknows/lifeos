@@ -3,16 +3,16 @@
 import { X } from "lucide-react";
 import { DynamicIcon, type IconName } from "lucide-react/dynamic";
 import { cn } from "@/lib/utils";
-import { CategoryT } from "../types";
+import { FinanceCategoryT } from "@/app/types/finanace-category";
 
 const CategoryPill = ({
     category,
     onClick,
     onDelete,
 }: {
-    category: CategoryT;
-    onClick: (category: CategoryT) => void;
-    onDelete: (category: CategoryT) => void;
+    category: FinanceCategoryT;
+    onClick: (category: FinanceCategoryT) => void;
+    onDelete: (category: FinanceCategoryT) => void;
 }) => {
     return (
         <div
@@ -27,7 +27,7 @@ const CategoryPill = ({
         >
             <span
                 className="flex size-5 shrink-0 items-center justify-center rounded-full"
-                style={{ backgroundColor: `${category.color ?? "#94a3b8"}20` }}
+                style={{ backgroundColor: `${category ?? "#94a3b8"}20` }}
             >
                 <DynamicIcon
                     name={(category.icon ?? "circle") as IconName}

@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/popover";
 import { categoryFormSchema, CategoryFormValues } from "@/schemas/finance/category-schema";
 import { IconPicker } from "./icon-picker";
-import { CategoryT } from "../types";
+import { FinanceCategoryT } from "@/app/types/finanace-category";
 
 const COLOR_OPTIONS = [
     { name: "Purple", value: "#7F77DD" },
@@ -49,13 +49,13 @@ interface AddCategoryModalProps {
     /** Pre-selects Income/Expense when opened from a specific section's "+ Add" pill. */
     defaultType?: CategoryFormValues["type"];
     /** When set, the modal opens pre-filled in edit mode instead of create mode. */
-    category?: CategoryT;
+    category?: FinanceCategoryT;
     /** Only relevant in edit mode — shows a "Delete category" action in the footer. */
-    onDelete?: (category: CategoryT) => void;
+    onDelete?: (category: FinanceCategoryT) => void;
 }
 
 function getDefaultValues(
-    category: CategoryT | undefined,
+    category: FinanceCategoryT | undefined,
     defaultType: CategoryFormValues["type"] | undefined,
 ): CategoryFormValues {
     if (category) {
