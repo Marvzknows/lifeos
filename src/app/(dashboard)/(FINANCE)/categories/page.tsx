@@ -8,7 +8,7 @@ import { CategoryFormValues } from "@/schemas/finance/category-schema";
 import { AddCategoryModal } from "./components/add-category-modal";
 import { CategoryStats } from "./components/category-stats";
 import { toast } from "@/components/ui/toast";
-import { useFinanceCategories } from "@/lib/api/services/hooks/finance.category.hooks";
+import { useCreateFinanceCategory, useFinanceCategories, useUpdateFinanceCategory } from "@/lib/api/services/hooks/finance.category.hooks";
 import { FinanceCategoryT } from "@/app/types/finanace-category";
 
 const CategoriesPage = () => {
@@ -21,52 +21,60 @@ const CategoriesPage = () => {
     const expense = data?.data?.expense ?? [];
     const total = income.length + expense.length;
 
-    function handleCategoryClick(category: FinanceCategoryT) {
+    // #region Mutation
+    const { mutateAsync: createCategory, isPending: isCreating, } = useCreateFinanceCategory();
+    const { mutateAsync: updateCategory, isPending: isUpdating } = useUpdateFinanceCategory();
+    // #endregion
+
+
+    // #region Handlers
+    const handleCategoryClick = (category: FinanceCategoryT) => {
         setEditingCategory(category);
         setModalOpen(true);
     }
 
-    function handleAddClick(type: CategoryType) {
+    const handleAddClick = (type: CategoryType) => {
         setEditingCategory(null);
         setModalDefaultType(type);
         setModalOpen(true);
     }
 
-    function handleDeleteCategory(category: FinanceCategoryT) {
+    const handleDeleteCategory = (category: FinanceCategoryT) => {
         toast.add({ title: `"${category.name}" deleted`, });
     }
 
-    function handleSubmitCategory(values: CategoryFormValues) {
+    const handleSubmitCategory = (values: CategoryFormValues) => {
         if (editingCategory) {
-            console.table(values)
-            // Edit mode: update the existing category in place.
-            // setCategories((prev) =>
-            //     prev.map((c) =>
-            //         c.id === editingCategory.id
-            //             ? {
-            //                 ...c,
-            //                 ...values,
-            //                 updatedAt: new Date().toISOString(),
-            //             }
-            //             : c,
-            //     ),
-            // );
+            toast.promise(updateCategory({ id: editingCategory.id, data: values }), {
+                loading: "Updating category...",
+                success: () => {
+                    setModalOpen(false);
+                    return {
+                        title: "Category updated",
+                        description: "Your category has been updated successfully.",
+                    };
+                },
+                error: (error) => {
+                    return error?.message ?? "Failed to update category.";
+                },
+            });
         } else {
-            console.table(values)
-            // Add mode: append a new category.
-            // const newCategory: CategoryT = {
-            //     id: crypto.randomUUID(),
-            //     name: values.name,
-            //     type: values.type,
-            //     icon: values.icon,
-            //     color: values.color,
-            //     createdAt: new Date().toISOString(),
-            //     updatedAt: new Date().toISOString(),
-            //     deletedAt: null,
-            // };
-            // setCategories((prev) => [...prev, newCategory]);
+            toast.promise(createCategory(values), {
+                loading: "Creating category...",
+                success: () => {
+                    setModalOpen(false);
+                    return {
+                        title: "Category created",
+                        description: "Your category has been created successfully.",
+                    };
+                },
+                error: (error) => {
+                    return error?.message ?? "Failed to create category.";
+                },
+            });
         }
     }
+    // #endregion
 
     return (
         <div className="space-y-8 p-6">
@@ -108,6 +116,7 @@ const CategoriesPage = () => {
                 defaultType={modalDefaultType}
                 category={editingCategory ?? undefined}
                 onDelete={handleDeleteCategory}
+                isLoading={isCreating || isUpdating}
             />
         </div>
     );

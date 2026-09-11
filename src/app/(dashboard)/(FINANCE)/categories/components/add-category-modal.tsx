@@ -3,7 +3,7 @@
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm, useWatch } from "react-hook-form";
-import { Check, Trash2 } from "lucide-react";
+import { Check, Loader2, Trash2 } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -46,12 +46,10 @@ interface AddCategoryModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
     onSubmit?: (values: CategoryFormValues) => void;
-    /** Pre-selects Income/Expense when opened from a specific section's "+ Add" pill. */
     defaultType?: CategoryFormValues["type"];
-    /** When set, the modal opens pre-filled in edit mode instead of create mode. */
     category?: FinanceCategoryT;
-    /** Only relevant in edit mode — shows a "Delete category" action in the footer. */
     onDelete?: (category: FinanceCategoryT) => void;
+    isLoading?: boolean;
 }
 
 function getDefaultValues(
@@ -81,6 +79,7 @@ export function AddCategoryModal({
     defaultType,
     category,
     onDelete,
+    isLoading = false
 }: AddCategoryModalProps) {
     const isEditMode = Boolean(category);
 
@@ -93,21 +92,20 @@ export function AddCategoryModal({
 
     function handleSubmit(values: CategoryFormValues) {
         onSubmit?.(values);
-        onOpenChange(false);
     }
 
     React.useEffect(() => {
         if (open) {
             form.reset(getDefaultValues(category, defaultType));
         }
-        // category/defaultType are read fresh each time the modal opens, not
-        // tracked reactively while it's open — re-opening for a different
-        // category is what should trigger the reset, not every render.
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [open]);
 
     return (
-        <Dialog open={open} onOpenChange={onOpenChange}>
+        <Dialog open={open} onOpenChange={(next) => {
+            if (isLoading) return;
+            onOpenChange(next);
+        }}>
             <DialogContent className="w-lg">
                 <DialogHeader>
                     <DialogTitle>
@@ -265,6 +263,7 @@ export function AddCategoryModal({
                         <Button
                             type="button"
                             variant="ghost"
+                            disabled={isLoading}
                             className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive sm:w-auto"
                             onClick={() => {
                                 onDelete(category!);
@@ -281,16 +280,21 @@ export function AddCategoryModal({
                         <Button
                             type="button"
                             variant="outline"
+                            disabled={isLoading}
                             className="h-8 w-full rounded-sm border border-muted px-3 text-xs hover:bg-accent sm:w-auto"
                             onClick={() => onOpenChange(false)}
                         >
                             Cancel
                         </Button>
                         <Button
-                            className="h-8 w-full rounded-sm bg-indigo-600 px-3 text-xs text-white hover:bg-indigo-500 sm:w-auto"
+                            disabled={isLoading}
+                            className="h-8 w-full rounded-sm bg-indigo-600 px-3 text-xs text-white hover:bg-indigo-500 sm:w-auto disabled:opacity-70"
                             type="submit"
                             form="category-form"
                         >
+                            {isLoading ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : null}
                             {isEditMode ? "Save changes" : "Create category"}
                         </Button>
                     </div>
