@@ -261,14 +261,14 @@ export function AddCategoryModal({
                         type="button"
                         variant="outline"
                         disabled={isLoading}
-                        className="h-8 w-full rounded-sm border border-muted px-3 text-xs hover:bg-accent sm:w-auto"
+                        className="h-8 flex-1 rounded-sm border border-muted px-3 text-xs hover:bg-accent sm:flex-none"
                         onClick={() => onOpenChange(false)}
                     >
                         Cancel
                     </Button>
                     <Button
                         disabled={isLoading}
-                        className="h-8 w-full rounded-sm bg-indigo-600 px-3 text-xs text-white hover:bg-indigo-500 sm:w-auto disabled:opacity-70"
+                        className="h-8 flex-1 rounded-sm bg-indigo-600 px-3 text-xs text-white hover:bg-indigo-500 sm:flex-none disabled:opacity-70"
                         type="submit"
                         form="category-form"
                     >
