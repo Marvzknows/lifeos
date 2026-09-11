@@ -27,7 +27,7 @@ const CategoryPill = ({
         >
             <span
                 className="flex size-5 shrink-0 items-center justify-center rounded-full"
-                style={{ backgroundColor: `${category ?? "#94a3b8"}20` }}
+                style={{ backgroundColor: `${category.color ?? "#94a3b8"}20` }}
             >
                 <DynamicIcon
                     name={(category.icon ?? "circle") as IconName}
@@ -54,6 +54,6 @@ const CategoryPill = ({
             </button>
         </div>
     );
-}
+};
 
 export default CategoryPill;

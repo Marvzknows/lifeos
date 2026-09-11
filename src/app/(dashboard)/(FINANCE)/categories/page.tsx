@@ -13,13 +13,12 @@ import { FinanceCategoryT } from "@/app/types/finanace-category";
 
 const CategoriesPage = () => {
     const { data, isLoading } = useFinanceCategories();
-    console.log(data)
     const [modalOpen, setModalOpen] = useState(false);
     const [modalDefaultType, setModalDefaultType] = useState<CategoryType>("EXPENSE");
     const [editingCategory, setEditingCategory] = useState<FinanceCategoryT | null>(null);
 
-    const income = data?.income ?? [];
-    const expense = data?.expense ?? [];
+    const income = data?.data?.income ?? [];
+    const expense = data?.data?.expense ?? [];
     const total = income.length + expense.length;
 
     function handleCategoryClick(category: FinanceCategoryT) {
@@ -39,6 +38,7 @@ const CategoriesPage = () => {
 
     function handleSubmitCategory(values: CategoryFormValues) {
         if (editingCategory) {
+            console.table(values)
             // Edit mode: update the existing category in place.
             // setCategories((prev) =>
             //     prev.map((c) =>
@@ -52,6 +52,7 @@ const CategoriesPage = () => {
             //     ),
             // );
         } else {
+            console.table(values)
             // Add mode: append a new category.
             // const newCategory: CategoryT = {
             //     id: crypto.randomUUID(),
@@ -78,22 +79,25 @@ const CategoriesPage = () => {
                 total={total ?? 0}
                 income={income.length}
                 expense={expense.length}
+                isLoading={isLoading}
             />
 
             <div className="space-y-6">
                 <CategorySection
                     title="Income"
-                    categories={data?.income ?? []}
+                    categories={income ?? []}
                     onCategoryClick={handleCategoryClick}
                     onAddClick={() => handleAddClick("INCOME")}
                     onDeleteCategory={handleDeleteCategory}
+                    isLoading={isLoading}
                 />
                 <CategorySection
                     title="Expense"
-                    categories={data?.expense ?? []}
+                    categories={expense ?? []}
                     onCategoryClick={handleCategoryClick}
                     onAddClick={() => handleAddClick("EXPENSE")}
                     onDeleteCategory={handleDeleteCategory}
+                    isLoading={isLoading}
                 />
             </div>
 

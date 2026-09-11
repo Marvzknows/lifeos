@@ -13,8 +13,10 @@ export type FinanceCategoryT = {
 export type FinanceCategoryTypeT = "INCOME" | "EXPENSE";
 
 export type FinanceCategoriesListResponseT = {
-    income: FinanceCategoryT[];
-    expense: FinanceCategoryT[];
+    data: {
+        income: FinanceCategoryT[];
+        expense: FinanceCategoryT[];
+    }
 };
 
 

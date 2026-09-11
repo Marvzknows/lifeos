@@ -260,12 +260,12 @@ export function AddCategoryModal({
                     </FieldGroup>
                 </form>
 
-                <DialogFooter className="pt-2 bg-transparent border-0 sm:justify-between">
+                <DialogFooter className="flex-col gap-2 border-0 bg-transparent pt-2 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
                     {isEditMode && onDelete ? (
                         <Button
                             type="button"
                             variant="ghost"
-                            className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                            className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive sm:w-auto"
                             onClick={() => {
                                 onDelete(category!);
                                 onOpenChange(false);
@@ -275,17 +275,22 @@ export function AddCategoryModal({
                             Delete category
                         </Button>
                     ) : (
-                        <span />
+                        <span className="hidden sm:block" />
                     )}
-                    <div className="flex gap-2">
+                    <div className="flex flex-col-reverse gap-2 sm:flex-row">
                         <Button
                             type="button"
                             variant="outline"
+                            className="h-8 w-full rounded-sm border border-muted px-3 text-xs hover:bg-accent sm:w-auto"
                             onClick={() => onOpenChange(false)}
                         >
                             Cancel
                         </Button>
-                        <Button className="h-8 text-xs w-full rounded-sm bg-indigo-600 px-3 text-white hover:bg-indigo-500 sm:w-auto" type="submit" form="category-form">
+                        <Button
+                            className="h-8 w-full rounded-sm bg-indigo-600 px-3 text-xs text-white hover:bg-indigo-500 sm:w-auto"
+                            type="submit"
+                            form="category-form"
+                        >
                             {isEditMode ? "Save changes" : "Create category"}
                         </Button>
                     </div>
