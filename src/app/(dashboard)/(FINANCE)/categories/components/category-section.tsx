@@ -15,7 +15,7 @@ const CategorySection = ({
     categories: FinanceCategoryT[];
     onCategoryClick: (category: FinanceCategoryT) => void;
     onAddClick: () => void;
-    onDeleteCategory: (category: FinanceCategoryT) => void;
+    onDeleteCategory: (id: string) => void;
     isLoading?: boolean;
 }) => {
     return (
@@ -31,7 +31,7 @@ const CategorySection = ({
                                 key={category.id}
                                 category={category}
                                 onClick={onCategoryClick}
-                                onDelete={onDeleteCategory}
+                                onDelete={() => onDeleteCategory(category.id)}
                             />
                         ))}
                         <AddCategoryPill onClick={onAddClick} />

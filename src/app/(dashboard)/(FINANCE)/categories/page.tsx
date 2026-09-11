@@ -8,14 +8,18 @@ import { CategoryFormValues } from "@/schemas/finance/category-schema";
 import { AddCategoryModal } from "./components/add-category-modal";
 import { CategoryStats } from "./components/category-stats";
 import { toast } from "@/components/ui/toast";
-import { useCreateFinanceCategory, useFinanceCategories, useUpdateFinanceCategory } from "@/lib/api/services/hooks/finance.category.hooks";
+import { useCreateFinanceCategory, useFinanceCategories, useSoftDeleteFinanceCategory, useUpdateFinanceCategory } from "@/lib/api/services/hooks/finance.category.hooks";
 import { FinanceCategoryT } from "@/app/types/finanace-category";
+import { ConfirmationDialog } from "@/components/confirmation-dialog";
+import { ClipboardList, Trash2 } from "lucide-react";
 
 const CategoriesPage = () => {
     const { data, isLoading } = useFinanceCategories();
     const [modalOpen, setModalOpen] = useState(false);
     const [modalDefaultType, setModalDefaultType] = useState<CategoryType>("EXPENSE");
     const [editingCategory, setEditingCategory] = useState<FinanceCategoryT | null>(null);
+    const [openDelete, setOpenDelete] = useState(false);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
     const income = data?.data?.income ?? [];
     const expense = data?.data?.expense ?? [];
@@ -24,6 +28,7 @@ const CategoriesPage = () => {
     // #region Mutation
     const { mutateAsync: createCategory, isPending: isCreating, } = useCreateFinanceCategory();
     const { mutateAsync: updateCategory, isPending: isUpdating } = useUpdateFinanceCategory();
+    const { mutateAsync: softDeleteCategory } = useSoftDeleteFinanceCategory();
     // #endregion
 
 
@@ -39,8 +44,29 @@ const CategoriesPage = () => {
         setModalOpen(true);
     }
 
-    const handleDeleteCategory = (category: FinanceCategoryT) => {
-        toast.add({ title: `"${category.name}" deleted`, });
+    const onDeleteCategory = (id: string) => {
+        setDeleteId(id);
+        setOpenDelete(true);
+    }
+    const handleDeleteCategory = (id: string) => {
+        if (!id) return
+        setOpenDelete(false);
+        toast.promise(softDeleteCategory(id), {
+            loading: "Deleting category...",
+            success: () => {
+                setDeleteId(null);
+                return {
+                    title: "Category deleted",
+                    description: "Your category has been deleted successfully.",
+                };
+            },
+            error: () => {
+                return {
+                    title: "Failed to delete category",
+                    description: "Something went wrong.",
+                };
+            },
+        });
     }
 
     const handleSubmitCategory = (values: CategoryFormValues) => {
@@ -96,7 +122,7 @@ const CategoriesPage = () => {
                     categories={income ?? []}
                     onCategoryClick={handleCategoryClick}
                     onAddClick={() => handleAddClick("INCOME")}
-                    onDeleteCategory={handleDeleteCategory}
+                    onDeleteCategory={onDeleteCategory}
                     isLoading={isLoading}
                 />
                 <CategorySection
@@ -104,7 +130,7 @@ const CategoriesPage = () => {
                     categories={expense ?? []}
                     onCategoryClick={handleCategoryClick}
                     onAddClick={() => handleAddClick("EXPENSE")}
-                    onDeleteCategory={handleDeleteCategory}
+                    onDeleteCategory={onDeleteCategory}
                     isLoading={isLoading}
                 />
             </div>
@@ -115,8 +141,22 @@ const CategoriesPage = () => {
                 onSubmit={handleSubmitCategory}
                 defaultType={modalDefaultType}
                 category={editingCategory ?? undefined}
-                onDelete={handleDeleteCategory}
+                onDelete={() => handleDeleteCategory(deleteId ?? "")}
                 isLoading={isCreating || isUpdating}
+            />
+
+            <ConfirmationDialog
+                open={openDelete}
+                onOpenChange={setOpenDelete}
+                intent="destructive"
+                title="Delete this Category?"
+                description="This action cannot be undone."
+                icon={Trash2}
+                itemIcon={ClipboardList}
+                confirmText="Delete"
+                confirmVariant="destructive"
+                onConfirm={() => handleDeleteCategory(deleteId ?? "")}
+                onCancel={() => setOpenDelete(false)}
             />
         </div>
     );

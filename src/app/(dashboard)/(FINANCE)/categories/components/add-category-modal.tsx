@@ -3,7 +3,7 @@
 import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm, useWatch } from "react-hook-form";
-import { Check, Loader2, Trash2 } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import {
     Dialog,
     DialogContent,
@@ -48,7 +48,6 @@ interface AddCategoryModalProps {
     onSubmit?: (values: CategoryFormValues) => void;
     defaultType?: CategoryFormValues["type"];
     category?: FinanceCategoryT;
-    onDelete?: (category: FinanceCategoryT) => void;
     isLoading?: boolean;
 }
 
@@ -78,7 +77,6 @@ export function AddCategoryModal({
     onSubmit,
     defaultType,
     category,
-    onDelete,
     isLoading = false
 }: AddCategoryModalProps) {
     const isEditMode = Boolean(category);
@@ -258,46 +256,27 @@ export function AddCategoryModal({
                     </FieldGroup>
                 </form>
 
-                <DialogFooter className="flex-col gap-2 border-0 bg-transparent pt-2 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
-                    {isEditMode && onDelete ? (
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            disabled={isLoading}
-                            className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive sm:w-auto"
-                            onClick={() => {
-                                onDelete(category!);
-                                onOpenChange(false);
-                            }}
-                        >
-                            <Trash2 className="size-4" />
-                            Delete category
-                        </Button>
-                    ) : (
-                        <span className="hidden sm:block" />
-                    )}
-                    <div className="flex flex-col-reverse gap-2 sm:flex-row">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            disabled={isLoading}
-                            className="h-8 w-full rounded-sm border border-muted px-3 text-xs hover:bg-accent sm:w-auto"
-                            onClick={() => onOpenChange(false)}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            disabled={isLoading}
-                            className="h-8 w-full rounded-sm bg-indigo-600 px-3 text-xs text-white hover:bg-indigo-500 sm:w-auto disabled:opacity-70"
-                            type="submit"
-                            form="category-form"
-                        >
-                            {isLoading ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : null}
-                            {isEditMode ? "Save changes" : "Create category"}
-                        </Button>
-                    </div>
+                <DialogFooter className="flex-row justify-end gap-2 border-0 bg-transparent pt-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        disabled={isLoading}
+                        className="h-8 w-full rounded-sm border border-muted px-3 text-xs hover:bg-accent sm:w-auto"
+                        onClick={() => onOpenChange(false)}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        disabled={isLoading}
+                        className="h-8 w-full rounded-sm bg-indigo-600 px-3 text-xs text-white hover:bg-indigo-500 sm:w-auto disabled:opacity-70"
+                        type="submit"
+                        form="category-form"
+                    >
+                        {isLoading ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : null}
+                        {isEditMode ? "Save changes" : "Create category"}
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
