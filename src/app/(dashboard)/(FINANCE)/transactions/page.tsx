@@ -1,25 +1,26 @@
 "use client";
 
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { PageHeader } from "@/components/page-header";
 import TransactionStats from "./components/transaction-stats";
 import { TransactionToolbar } from "./components/transaction-toolbar";
 import { TransactionTypeFilter } from "./components/transaction-type-filter";
 import { AddTransactionButton } from "./components/add-transaction-button";
 import { CreateTransactionModal } from "./components/create-transaction-modal";
+import { DateRangeValue } from "./components/date-range-filter";
 import { dummyTransactions, dummyCategories } from "./components/dummy-data";
 import { DataTable } from "@/components/data-table/data-table";
 import { transactionColumns } from "./transaction-column";
 import { TransactionFormValues } from "@/schemas/finance/transaction-schema";
 
 const TransactionPage = () => {
-    const [typeFilter, setTypeFilter] =
-        React.useState<TransactionTypeFilter>("ALL");
-    const [search, setSearch] = React.useState("");
-    const [categoryFilter, setCategoryFilter] = React.useState("ALL");
-    const [isModalOpen, setIsModalOpen] = React.useState(false);
+    const [typeFilter, setTypeFilter] = useState<TransactionTypeFilter>("ALL");
+    const [search, setSearch] = useState("");
+    const [categoryFilter, setCategoryFilter] = useState("ALL");
+    const [dateRange, setDateRange] = useState<DateRangeValue>({});
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const filteredTransactions = React.useMemo(() => {
+    const filteredTransactions = useMemo(() => {
         return dummyTransactions.filter((txn) => {
             const matchesType = typeFilter === "ALL" || txn.type === typeFilter;
             const matchesCategory =
@@ -27,9 +28,20 @@ const TransactionPage = () => {
             const matchesSearch = txn.description
                 .toLowerCase()
                 .includes(search.toLowerCase());
-            return matchesType && matchesCategory && matchesSearch;
+
+            const txnDate = new Date(txn.transactionDate);
+            const matchesFrom = !dateRange.from || txnDate >= dateRange.from;
+            const matchesTo = !dateRange.to || txnDate <= dateRange.to;
+
+            return (
+                matchesType &&
+                matchesCategory &&
+                matchesSearch &&
+                matchesFrom &&
+                matchesTo
+            );
         });
-    }, [typeFilter, search, categoryFilter]);
+    }, [typeFilter, search, categoryFilter, dateRange]);
 
     const totalIncome = dummyTransactions
         .filter((t) => t.type === "INCOME")
@@ -70,12 +82,15 @@ const TransactionPage = () => {
                     categories={dummyCategories}
                     categoryFilter={categoryFilter}
                     onCategoryFilterChange={setCategoryFilter}
+                    dateRange={dateRange}
+                    onDateRangeChange={setDateRange}
                 />
 
                 <DataTable
                     columns={transactionColumns}
                     data={filteredTransactions}
                     getRowId={(row) => row.id}
+                // enableRowSelection
                 />
             </div>
 
