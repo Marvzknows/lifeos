@@ -87,7 +87,7 @@ export const getFinanceTransactionById = async (
     await validateTransactionOwnership(transactionId, userId, { includeDeleted: true });
 
     return prisma.transaction.findUniqueOrThrow({
-        where: { id: transactionId },
+        where: { id: transactionId, deletedAt: null },
         select: TRANSACTION_SELECT,
     });
 };
