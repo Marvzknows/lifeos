@@ -12,12 +12,18 @@ export interface Transaction {
     };
 }
 
-export const dummyCategories = [
-    { id: "cat-1", name: "Salary" },
-    { id: "cat-2", name: "Groceries" },
-    { id: "cat-3", name: "Transportation" },
-    { id: "cat-4", name: "Food and drink" },
-    { id: "cat-5", name: "Freelance" },
+export interface CategoryOption {
+    id: string;
+    name: string;
+    type: "INCOME" | "EXPENSE";
+}
+
+export const dummyCategories: CategoryOption[] = [
+    { id: "cat-1", name: "Salary", type: "INCOME" },
+    { id: "cat-2", name: "Groceries", type: "EXPENSE" },
+    { id: "cat-3", name: "Transportation", type: "EXPENSE" },
+    { id: "cat-4", name: "Food and drink", type: "EXPENSE" },
+    { id: "cat-5", name: "Freelance", type: "INCOME" },
 ];
 
 export const dummyTransactions: Transaction[] = [

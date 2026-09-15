@@ -6,15 +6,18 @@ import TransactionStats from "./components/transaction-stats";
 import { TransactionToolbar } from "./components/transaction-toolbar";
 import { TransactionTypeFilter } from "./components/transaction-type-filter";
 import { AddTransactionButton } from "./components/add-transaction-button";
+import { CreateTransactionModal } from "./components/create-transaction-modal";
 import { dummyTransactions, dummyCategories } from "./components/dummy-data";
 import { DataTable } from "@/components/data-table/data-table";
 import { transactionColumns } from "./transaction-column";
+import { TransactionFormValues } from "@/schemas/finance/transaction-schema";
 
 const TransactionPage = () => {
     const [typeFilter, setTypeFilter] =
         React.useState<TransactionTypeFilter>("ALL");
     const [search, setSearch] = React.useState("");
     const [categoryFilter, setCategoryFilter] = React.useState("ALL");
+    const [isModalOpen, setIsModalOpen] = React.useState(false);
 
     const filteredTransactions = React.useMemo(() => {
         return dummyTransactions.filter((txn) => {
@@ -35,16 +38,20 @@ const TransactionPage = () => {
         .filter((t) => t.type === "EXPENSE")
         .reduce((sum, t) => sum + t.amount, 0);
 
-    const handleAddTransaction = () => {
-        // open your create-transaction modal/sheet here
-    };
+    function handleCreateTransaction(values: TransactionFormValues) {
+        // call your create-transaction mutation here
+        console.log(values);
+        setIsModalOpen(false);
+    }
 
     return (
         <div className="space-y-8 p-6">
             <PageHeader
                 title="Transactions"
                 description="Manage your income and expenses with ease."
-                action={<AddTransactionButton onClick={handleAddTransaction} />}
+                action={
+                    <AddTransactionButton onClick={() => setIsModalOpen(true)} />
+                }
             />
 
             <TransactionStats
@@ -71,6 +78,13 @@ const TransactionPage = () => {
                     getRowId={(row) => row.id}
                 />
             </div>
+
+            <CreateTransactionModal
+                open={isModalOpen}
+                onOpenChange={setIsModalOpen}
+                categories={dummyCategories}
+                onSubmit={handleCreateTransaction}
+            />
         </div>
     );
 };
