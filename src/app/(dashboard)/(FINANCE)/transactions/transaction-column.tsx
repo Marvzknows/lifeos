@@ -2,8 +2,8 @@
 
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Transaction } from "./components/dummy-data";
 import { DataTableColumn } from "@/components/data-table/data-table";
+import { TransactionT } from "@/app/types/finanace-transaction";
 
 const currencyFormatter = new Intl.NumberFormat("en-PH", {
     style: "currency",
@@ -17,7 +17,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-PH", {
     year: "numeric",
 });
 
-export const transactionColumns: DataTableColumn<Transaction>[] = [
+export const transactionColumns: DataTableColumn<TransactionT>[] = [
     {
         id: "description",
         header: "Description",

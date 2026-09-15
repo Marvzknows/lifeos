@@ -20,14 +20,14 @@ import {
     DrawerTitle,
 } from "@/components/ui/drawer";
 import { TransactionForm } from "./transaction-form";
-import { CategoryOption } from "./dummy-data";
 import { TransactionFormValues } from "@/schemas/finance/transaction-schema";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { TransactionCategoryOptionT } from "@/app/types/finanace-transaction";
 
 interface CreateTransactionModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    categories: CategoryOption[];
+    categories: TransactionCategoryOptionT[];
     onSubmit?: (values: TransactionFormValues) => void;
     isLoading?: boolean;
 }

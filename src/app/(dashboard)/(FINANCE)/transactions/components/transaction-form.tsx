@@ -32,11 +32,11 @@ import {
     transactionFormSchema,
     TransactionFormValues,
 } from "@/schemas/finance/transaction-schema";
-import { CategoryOption } from "./dummy-data";
+import { TransactionCategoryOptionT } from "@/app/types/finanace-transaction";
 
 interface TransactionFormProps {
     formId: string;
-    categories: CategoryOption[];
+    categories: TransactionCategoryOptionT[];
     defaultType?: "INCOME" | "EXPENSE";
     onSubmit: (values: TransactionFormValues) => void;
 }

@@ -4,6 +4,7 @@ import React, { useMemo, useState } from "react";
 import { PageHeader } from "@/components/page-header";
 import TransactionStats from "./components/transaction-stats";
 import { TransactionToolbar } from "./components/transaction-toolbar";
+import { TransactionDateLabel } from "./components/transaction-date-label";
 import { TransactionTypeFilter } from "./components/transaction-type-filter";
 import { AddTransactionButton } from "./components/add-transaction-button";
 import { CreateTransactionModal } from "./components/create-transaction-modal";
@@ -13,6 +14,7 @@ import { DataTable } from "@/components/data-table/data-table";
 import { transactionColumns } from "./transaction-column";
 import { TransactionFormValues } from "@/schemas/finance/transaction-schema";
 import getDefaultDateRange from "@/helpers/get-default-date-range";
+import { filterTransactions } from "./filter-transaction";
 
 const TransactionPage = () => {
     const [typeFilter, setTypeFilter] = useState<TransactionTypeFilter>("ALL");
@@ -21,33 +23,20 @@ const TransactionPage = () => {
     const [dateRange, setDateRange] = React.useState<DateRangeValue>(getDefaultDateRange());
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const filteredTransactions = useMemo(() => {
-        return dummyTransactions.filter((txn) => {
-            const matchesType = typeFilter === "ALL" || txn.type === typeFilter;
-            const matchesCategory =
-                categoryFilter === "ALL" || txn.category.id === categoryFilter;
-            const matchesSearch = txn.description
-                .toLowerCase()
-                .includes(search.toLowerCase());
+    const filteredTransactions = useMemo(
+        () => filterTransactions(dummyTransactions, { typeFilter, categoryFilter, search, dateRange }),
+        [typeFilter, search, categoryFilter, dateRange],
+    );
 
-            const txnDate = new Date(txn.transactionDate);
-            const matchesFrom = !dateRange.from || txnDate >= dateRange.from;
-            const matchesTo = !dateRange.to || txnDate <= dateRange.to;
+    const rangeFilteredTransactions = useMemo(
+        () => filterTransactions(dummyTransactions, { dateRange }),
+        [dateRange],
+    );
 
-            return (
-                matchesType &&
-                matchesCategory &&
-                matchesSearch &&
-                matchesFrom &&
-                matchesTo
-            );
-        });
-    }, [typeFilter, search, categoryFilter, dateRange]);
-
-    const totalIncome = dummyTransactions
+    const totalIncome = rangeFilteredTransactions
         .filter((t) => t.type === "INCOME")
         .reduce((sum, t) => sum + t.amount, 0);
-    const totalExpense = dummyTransactions
+    const totalExpense = rangeFilteredTransactions
         .filter((t) => t.type === "EXPENSE")
         .reduce((sum, t) => sum + t.amount, 0);
 
@@ -67,12 +56,15 @@ const TransactionPage = () => {
                 }
             />
 
-            <TransactionStats
-                totalIncome={totalIncome}
-                totalExpense={totalExpense}
-                netBalance={totalIncome - totalExpense}
-                isLoading={false}
-            />
+            <div className="space-y-3">
+                <TransactionDateLabel dateRange={dateRange} />
+                <TransactionStats
+                    totalIncome={totalIncome}
+                    totalExpense={totalExpense}
+                    netBalance={totalIncome - totalExpense}
+                    isLoading={false}
+                />
+            </div>
 
             <div className="space-y-6">
                 <TransactionToolbar
