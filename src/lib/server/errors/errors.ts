@@ -20,6 +20,12 @@ export class NotFoundError extends AppError {
   }
 }
 
+export class ValidationError extends AppError {
+  constructor(message = "Invalid request") {
+    super(message, 400);
+  }
+}
+
 export class QuotaExceededError extends AppError {
   constructor(message: string) {
     super(message, 429); // 429 = Too Many Requests, the correct status for quota/rate limits

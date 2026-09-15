@@ -14,3 +14,10 @@ export const transactionFormSchema = z.object({
 });
 
 export type TransactionFormValues = z.infer<typeof transactionFormSchema>;
+
+// Server-side: same shape, but transactionDate arrives as a JSON string, not a Date instance
+export const createTransactionSchema = transactionFormSchema.extend({
+    transactionDate: z.coerce.date(),
+});
+
+export type CreateTransactionInput = z.infer<typeof createTransactionSchema>;
