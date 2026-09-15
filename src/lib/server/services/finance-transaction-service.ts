@@ -4,6 +4,11 @@ import { ForbiddenError, NotFoundError, ValidationError } from "../errors/errors
 import { TransactionListQuery, UpdateTransactionInput } from "@/schemas/finance/transaction-schema";
 import { Prisma } from "@/generated/prisma/client";
 
+type TransactionStatsParams = {
+    fromDate?: Date;
+    toDate?: Date;
+}
+
 const validateCategory = async (categoryId: string, userId: string) => {
     const category = await prisma.category.findFirst({
         where: { id: categoryId, deletedAt: null },
@@ -90,6 +95,43 @@ export const getFinanceTransactionById = async (
         where: { id: transactionId, deletedAt: null },
         select: TRANSACTION_SELECT,
     });
+};
+
+export const getFinanceTransactionStats = async (
+    userId: string,
+    { fromDate, toDate }: TransactionStatsParams
+) => {
+    const baseWhere: Prisma.TransactionWhereInput = {
+        userId,
+        deletedAt: null,
+        ...((fromDate || toDate) && {
+            transactionDate: {
+                ...(fromDate && { gte: fromDate }),
+                ...(toDate && { lte: toDate }),
+            },
+        }),
+    };
+
+    const [incomeResult, expenseResult] = await Promise.all([
+        prisma.transaction.aggregate({
+            where: { ...baseWhere, category: { type: "INCOME" } },
+            _sum: { amount: true },
+        }),
+        prisma.transaction.aggregate({
+            where: { ...baseWhere, category: { type: "EXPENSE" } },
+            _sum: { amount: true },
+        }),
+    ]);
+
+    const totalIncome = incomeResult._sum.amount ?? new Prisma.Decimal(0);
+    const totalExpense = expenseResult._sum.amount ?? new Prisma.Decimal(0);
+    const netBalance = totalIncome.sub(totalExpense);
+
+    return {
+        totalIncome: totalIncome.toFixed(2),
+        totalExpense: totalExpense.toFixed(2),
+        netBalance: netBalance.toFixed(2),
+    };
 };
 
 // --- List with filters + pagination ---

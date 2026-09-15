@@ -12,12 +12,13 @@ import { dummyTransactions, dummyCategories } from "./components/dummy-data";
 import { DataTable } from "@/components/data-table/data-table";
 import { transactionColumns } from "./transaction-column";
 import { TransactionFormValues } from "@/schemas/finance/transaction-schema";
+import getDefaultDateRange from "@/helpers/get-default-date-range";
 
 const TransactionPage = () => {
     const [typeFilter, setTypeFilter] = useState<TransactionTypeFilter>("ALL");
     const [search, setSearch] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("ALL");
-    const [dateRange, setDateRange] = useState<DateRangeValue>({});
+    const [dateRange, setDateRange] = React.useState<DateRangeValue>(getDefaultDateRange());
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const filteredTransactions = useMemo(() => {
