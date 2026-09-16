@@ -54,3 +54,6 @@ export const transactionListQuerySchema = z
     );
 
 export type TransactionListQuery = z.infer<typeof transactionListQuerySchema>;
+
+export type CreateFinanceTransactionPayloadT = CreateTransactionInput;
+export type UpdateFinanceTransactionPayloadT = UpdateTransactionInput;
