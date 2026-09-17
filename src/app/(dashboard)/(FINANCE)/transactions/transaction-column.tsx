@@ -36,9 +36,9 @@ export const transactionColumns: DataTableColumn<TransactionT>[] = [
         id: "type",
         header: "Type",
         sortable: true,
-        sortAccessor: (row) => row.type,
+        sortAccessor: (row) => row.category.type,
         cell: (row) =>
-            row.type === "INCOME" ? (
+            row.category.type === "INCOME" ? (
                 <Badge
                     variant="outline"
                     className="gap-1 border-green-200 bg-green-100 text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-400"
@@ -72,12 +72,12 @@ export const transactionColumns: DataTableColumn<TransactionT>[] = [
         cell: (row) => (
             <span
                 className={
-                    row.type === "INCOME"
+                    row.category.type === "INCOME"
                         ? "font-medium text-green-700 dark:text-green-400"
                         : "font-medium text-red-700 dark:text-red-400"
                 }
             >
-                {row.type === "INCOME" ? "+" : "-"}
+                {row.category.type === "INCOME" ? "+" : "-"}
                 {currencyFormatter.format(row.amount)}
             </span>
         ),

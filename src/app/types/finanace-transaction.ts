@@ -1,13 +1,11 @@
 import { FinanceCategoryTypeT } from "./finanace-category";
 
-export type TransactionTypeT = "INCOME" | "EXPENSE";
 export type TransactionTypeFilterT = "ALL" | "INCOME" | "EXPENSE";
 
 export type TransactionT = {
     id: string;
     description: string;
     amount: number;
-    type: TransactionTypeT;
     transactionDate: string;
     category: {
         id: string;
