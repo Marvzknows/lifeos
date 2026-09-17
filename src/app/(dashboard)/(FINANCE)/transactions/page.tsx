@@ -16,6 +16,8 @@ import { TransactionFormValues } from "@/schemas/finance/transaction-schema";
 import getDefaultDateRange from "@/helpers/get-default-date-range";
 import { useFinanceTransactions, useFinanceTransactionStats } from "@/lib/api/services/hooks/finance.transaction.hooks";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useFinanceCategories } from "@/lib/api/services/hooks/finance.category.hooks";
+import { FinanceCategoryT } from "@/app/types/finanace-category";
 
 const TransactionPage = () => {
     const [typeFilter, setTypeFilter] = useState<TransactionTypeFilter>("ALL");
@@ -27,20 +29,33 @@ const TransactionPage = () => {
     const debouncedSearch = useDebounce(search);
     const { data, isLoading } = useFinanceTransactions({
         type: typeFilter,
-        categoryId: categoryFilter,
-        search: debouncedSearch,
-        fromDate: dateRange.from,
-        toDate: dateRange.to,
+        ...(categoryFilter !== "ALL" && { categoryId: categoryFilter }),
+        ...(debouncedSearch && { search: debouncedSearch }),
+        ...(dateRange.from && { fromDate: dateRange.from }),
+        ...(dateRange.to && { toDate: dateRange.to }),
         page: 1,
-        limit: 1
+        limit: 10
     });
     const { data: statsData, isLoading: isLoadingStats } = useFinanceTransactionStats();
+    const { data: categoriesData } = useFinanceCategories();
 
     function handleCreateTransaction(values: TransactionFormValues) {
         // call your create-transaction mutation here
         console.log(values);
         setIsModalOpen(false);
     }
+
+    const expenseCategories = categoriesData?.data.expense.map((category: FinanceCategoryT) => ({
+        id: category.id,
+        name: category.name
+    })) ?? [];
+
+    const incomeCategories = categoriesData?.data.income.map((category: FinanceCategoryT) => ({
+        id: category.id,
+        name: category.name
+    })) ?? [];
+
+    const allCategories = [...incomeCategories, ...expenseCategories];
 
     return (
         <div className="space-y-8 p-6">
@@ -68,7 +83,7 @@ const TransactionPage = () => {
                     onTypeFilterChange={setTypeFilter}
                     search={search}
                     onSearchChange={setSearch}
-                    categories={dummyCategories}
+                    categories={typeFilter === 'ALL' ? allCategories : typeFilter === 'INCOME' ? incomeCategories : expenseCategories}
                     categoryFilter={categoryFilter}
                     onCategoryFilterChange={setCategoryFilter}
                     dateRange={dateRange}

@@ -6,6 +6,10 @@ import {
 } from "@/components/ui/toggle-group";
 
 export type TransactionTypeFilter = "ALL" | "INCOME" | "EXPENSE";
+export type CategoryTypeFilter = {
+    id: string;
+    name: string;
+}
 
 type TransactionTypeFilterProps = {
     value: TransactionTypeFilter;

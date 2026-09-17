@@ -1,4 +1,4 @@
-import { TransactionCategoryOptionT, TransactionT } from "@/app/types/finanace-transaction";
+import { TransactionCategoryOptionT } from "@/app/types/finanace-transaction";
 
 export const dummyCategories: TransactionCategoryOptionT[] = [
     { id: "cat-1", name: "Salary", type: "INCOME" },

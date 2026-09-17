@@ -32,7 +32,13 @@ export function CategoryFilter({
             }}
         >
             <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="All categories" />
+                <SelectValue placeholder="All categories">
+                    {(val: string) =>
+                        val === "ALL"
+                            ? "All categories"
+                            : categories.find((c) => c.id === val)?.name ?? "All categories"
+                    }
+                </SelectValue>
             </SelectTrigger>
             <SelectContent>
                 <SelectItem value="ALL">All categories</SelectItem>
