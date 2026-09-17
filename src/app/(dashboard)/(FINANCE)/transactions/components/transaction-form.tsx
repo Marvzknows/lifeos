@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { CalendarIcon } from "lucide-react";
@@ -32,21 +31,22 @@ import {
     transactionFormSchema,
     TransactionFormValues,
 } from "@/schemas/finance/transaction-schema";
-import { TransactionCategoryOptionT } from "@/app/types/finanace-transaction";
+import { useFinanceCategories } from "@/lib/api/services/hooks/finance.category.hooks";
+import { FinanceCategoryT } from "@/app/types/finanace-category";
 
 interface TransactionFormProps {
     formId: string;
-    categories: TransactionCategoryOptionT[];
     defaultType?: "INCOME" | "EXPENSE";
     onSubmit: (values: TransactionFormValues) => void;
 }
 
 export function TransactionForm({
     formId,
-    categories,
     defaultType = "EXPENSE",
     onSubmit,
 }: TransactionFormProps) {
+    const { data: categoriesData, isLoading: isLoadingCategories } = useFinanceCategories();
+
     const form = useForm<TransactionFormValues>({
         resolver: zodResolver(transactionFormSchema),
         defaultValues: {
@@ -60,10 +60,17 @@ export function TransactionForm({
 
     const type = useWatch({ control: form.control, name: "type" });
 
-    const filteredCategories = React.useMemo(
-        () => categories.filter((c) => c.type === type),
-        [categories, type],
-    );
+    const expenseCategories = categoriesData?.data.expense.map((category: FinanceCategoryT) => ({
+        id: category.id,
+        name: category.name
+    })) ?? [];
+
+    const incomeCategories = categoriesData?.data.income.map((category: FinanceCategoryT) => ({
+        id: category.id,
+        name: category.name
+    })) ?? [];
+
+    const filteredCategories = type === "INCOME" ? incomeCategories : expenseCategories;
 
     return (
         <form id={formId} onSubmit={form.handleSubmit(onSubmit)}>
@@ -124,24 +131,40 @@ export function TransactionForm({
                         <Field data-invalid={fieldState.invalid}>
                             <FieldLabel htmlFor="transaction-category">Category</FieldLabel>
                             <Select
-                                value={field.value}
+                                value={field.value || "__placeholder"}
                                 onValueChange={(val) => {
-                                    if (val) field.onChange(val);
+                                    if (val && val !== "__placeholder") field.onChange(val);
                                 }}
+                                disabled={isLoadingCategories}
                             >
                                 <SelectTrigger
                                     id="transaction-category"
                                     aria-invalid={fieldState.invalid}
                                     className="w-full rounded-sm"
                                 >
-                                    <SelectValue placeholder="Select a category" />
+                                    <SelectValue placeholder="Select a category">
+                                        {(val: string) =>
+                                            val === "__placeholder"
+                                                ? "Select a category"
+                                                : filteredCategories.find((c) => c.id === val)?.name
+                                        }
+                                    </SelectValue>
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {filteredCategories.map((category) => (
-                                        <SelectItem key={category.id} value={category.id}>
-                                            {category.name}
-                                        </SelectItem>
-                                    ))}
+                                    <SelectItem value="__placeholder" disabled className="text-muted-foreground">
+                                        Select a category
+                                    </SelectItem>
+                                    {isLoadingCategories ? (
+                                        <SelectItem disabled value="__loading">Loading...</SelectItem>
+                                    ) : filteredCategories.length === 0 ? (
+                                        <SelectItem disabled value="__empty">No categories yet</SelectItem>
+                                    ) : (
+                                        filteredCategories.map((category) => (
+                                            <SelectItem key={category.id} value={category.id}>
+                                                {category.name}
+                                            </SelectItem>
+                                        ))
+                                    )}
                                 </SelectContent>
                             </Select>
                             {fieldState.invalid && <FieldError errors={[fieldState.error]} />}

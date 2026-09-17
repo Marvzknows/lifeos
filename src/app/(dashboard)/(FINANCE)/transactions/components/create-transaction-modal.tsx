@@ -37,7 +37,6 @@ const FORM_ID = "create-transaction-form";
 export function CreateTransactionModal({
     open,
     onOpenChange,
-    categories,
     onSubmit,
     isLoading = false,
 }: CreateTransactionModalProps) {
@@ -53,7 +52,6 @@ export function CreateTransactionModal({
     const formBody = (
         <TransactionForm
             formId={FORM_ID}
-            categories={categories}
             onSubmit={handleSubmit}
         />
     );
