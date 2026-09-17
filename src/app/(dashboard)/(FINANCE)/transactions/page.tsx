@@ -18,6 +18,7 @@ import { useFinanceTransactions, useFinanceTransactionStats } from "@/lib/api/se
 import { useDebounce } from "@/hooks/use-debounce";
 import { useFinanceCategories } from "@/lib/api/services/hooks/finance.category.hooks";
 import { FinanceCategoryT } from "@/app/types/finanace-category";
+import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 
 const TransactionPage = () => {
     const [typeFilter, setTypeFilter] = useState<TransactionTypeFilter>("ALL");
@@ -25,6 +26,7 @@ const TransactionPage = () => {
     const [categoryFilter, setCategoryFilter] = useState("ALL");
     const [dateRange, setDateRange] = React.useState<DateRangeValue>(getDefaultDateRange());
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [page, setPage] = useState(1);
 
     const debouncedSearch = useDebounce(search);
     const { data, isLoading } = useFinanceTransactions({
@@ -33,7 +35,7 @@ const TransactionPage = () => {
         ...(debouncedSearch && { search: debouncedSearch }),
         ...(dateRange.from && { fromDate: dateRange.from }),
         ...(dateRange.to && { toDate: dateRange.to }),
-        page: 1,
+        page,
         limit: 10
     });
     const { data: statsData, isLoading: isLoadingStats } = useFinanceTransactionStats();
@@ -96,6 +98,12 @@ const TransactionPage = () => {
                     getRowId={(row) => row.id}
                     isLoading={isLoading}
                 // enableRowSelection
+                />
+
+                <DataTablePagination
+                    page={data?.pagination?.page ?? 1}
+                    pageCount={data?.pagination?.totalPages ?? 0}
+                    onPageChange={(newPage) => setPage(newPage)}
                 />
             </div>
 
