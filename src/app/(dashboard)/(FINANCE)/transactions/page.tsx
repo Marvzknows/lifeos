@@ -14,11 +14,12 @@ import { DataTable } from "@/components/data-table/data-table";
 import { transactionColumns } from "./transaction-column";
 import { TransactionFormValues } from "@/schemas/finance/transaction-schema";
 import getDefaultDateRange from "@/helpers/get-default-date-range";
-import { useFinanceTransactions, useFinanceTransactionStats } from "@/lib/api/services/hooks/finance.transaction.hooks";
+import { useCreateFinanceTransaction, useFinanceTransactions, useFinanceTransactionStats } from "@/lib/api/services/hooks/finance.transaction.hooks";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useFinanceCategories } from "@/lib/api/services/hooks/finance.category.hooks";
 import { FinanceCategoryT } from "@/app/types/finanace-category";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
+import { toast } from "@/components/ui/toast";
 
 const TransactionPage = () => {
     const [typeFilter, setTypeFilter] = useState<TransactionTypeFilter>("ALL");
@@ -40,11 +41,23 @@ const TransactionPage = () => {
     });
     const { data: statsData, isLoading: isLoadingStats } = useFinanceTransactionStats();
     const { data: categoriesData } = useFinanceCategories();
+    const { mutateAsync: createTransaction, isPending: isCreating } = useCreateFinanceTransaction()
 
     function handleCreateTransaction(values: TransactionFormValues) {
-        // call your create-transaction mutation here
-        console.log(values);
-        setIsModalOpen(false);
+
+        toast.promise(createTransaction(values), {
+            loading: "Creating transaction...",
+            success: () => {
+                setIsModalOpen(false);
+                return {
+                    title: "Transaction created",
+                    description: "Your transaction has been created successfully.",
+                };
+            },
+            error: (error) => {
+                return error?.message ?? "Failed to create transaction.";
+            },
+        });
     }
 
     const expenseCategories = categoriesData?.data.expense.map((category: FinanceCategoryT) => ({
@@ -111,6 +124,7 @@ const TransactionPage = () => {
                 open={isModalOpen}
                 onOpenChange={setIsModalOpen}
                 categories={dummyCategories}
+                isLoading={isCreating}
                 onSubmit={handleCreateTransaction}
             />
         </div>
