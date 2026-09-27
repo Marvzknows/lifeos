@@ -7,27 +7,34 @@ import { TransactionToolbar } from "./components/transaction-toolbar";
 import { TransactionDateLabel } from "./components/transaction-date-label";
 import { TransactionTypeFilter } from "./components/transaction-type-filter";
 import { AddTransactionButton } from "./components/add-transaction-button";
-import { CreateTransactionModal } from "./components/create-transaction-modal";
 import { DateRangeValue } from "./components/date-range-filter";
-import { dummyCategories } from "./components/dummy-data";
 import { DataTable } from "@/components/data-table/data-table";
-import { transactionColumns } from "./transaction-column";
+import { getTransactionColumns } from "./transaction-column";
 import { TransactionFormValues } from "@/schemas/finance/transaction-schema";
 import getDefaultDateRange from "@/helpers/get-default-date-range";
-import { useCreateFinanceTransaction, useFinanceTransactions, useFinanceTransactionStats } from "@/lib/api/services/hooks/finance.transaction.hooks";
+import {
+    useCreateFinanceTransaction,
+    useUpdateFinanceTransaction,
+    useFinanceTransactions,
+    useFinanceTransactionStats,
+} from "@/lib/api/services/hooks/finance.transaction.hooks";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useFinanceCategories } from "@/lib/api/services/hooks/finance.category.hooks";
 import { FinanceCategoryT } from "@/app/types/finanace-category";
+import { TransactionT } from "@/app/types/finanace-transaction";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { toast } from "@/components/ui/toast";
+import { TransactionModal } from "./components/create-transaction-modal";
 
 const TransactionPage = () => {
     const [typeFilter, setTypeFilter] = useState<TransactionTypeFilter>("ALL");
     const [search, setSearch] = useState("");
     const [categoryFilter, setCategoryFilter] = useState("ALL");
     const [dateRange, setDateRange] = React.useState<DateRangeValue>(getDefaultDateRange());
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [page, setPage] = useState(1);
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingTransaction, setEditingTransaction] = useState<TransactionT | undefined>(undefined);
 
     const debouncedSearch = useDebounce(search);
     const { data, isLoading } = useFinanceTransactions({
@@ -39,11 +46,41 @@ const TransactionPage = () => {
         page,
         limit: 10
     });
-    const { data: statsData, isLoading: isLoadingStats } = useFinanceTransactionStats();
+    const { data: statsData, isLoading: isLoadingStats } = useFinanceTransactionStats({
+        fromDate: dateRange.from,
+        toDate: dateRange.to,
+    });
     const { data: categoriesData } = useFinanceCategories();
-    const { mutateAsync: createTransaction, isPending: isCreating } = useCreateFinanceTransaction()
+    const { mutateAsync: createTransaction, isPending: isCreating } = useCreateFinanceTransaction();
+    const { mutateAsync: updateTransaction, isPending: isUpdating } = useUpdateFinanceTransaction();
 
-    function handleCreateTransaction(values: TransactionFormValues) {
+    const openCreateModal = () => {
+        setEditingTransaction(undefined);
+        setIsModalOpen(true);
+    }
+
+    const openEditModal = (transaction: TransactionT) => {
+        setEditingTransaction(transaction);
+        setIsModalOpen(true);
+    }
+
+    const handleSubmitTransaction = (values: TransactionFormValues) => {
+        if (editingTransaction) {
+            alert("SUBMIT EDIT TRANSACTION")
+            console.log(values)
+            // toast.promise(updateTransaction({ id: editingTransaction.id, data: values }), {
+            //     loading: "Saving changes...",
+            //     success: () => {
+            //         setIsModalOpen(false);
+            //         return {
+            //             title: "Transaction updated",
+            //             description: "Your changes have been saved.",
+            //         };
+            //     },
+            //     error: (error) => error?.message ?? "Failed to update transaction.",
+            // });
+            return;
+        }
 
         toast.promise(createTransaction(values), {
             loading: "Creating transaction...",
@@ -54,11 +91,19 @@ const TransactionPage = () => {
                     description: "Your transaction has been created successfully.",
                 };
             },
-            error: (error) => {
-                return error?.message ?? "Failed to create transaction.";
-            },
+            error: (error) => error?.message ?? "Failed to create transaction.",
         });
     }
+
+    const handleDeleteTransaction = (transaction: TransactionT) => {
+        // wire up useSoftDeleteFinanceTransaction here
+        console.log("delete", transaction.id);
+    }
+
+    const columns = getTransactionColumns({
+        onEdit: openEditModal,
+        onDelete: handleDeleteTransaction,
+    });
 
     const expenseCategories = categoriesData?.data.expense.map((category: FinanceCategoryT) => ({
         id: category.id,
@@ -78,16 +123,16 @@ const TransactionPage = () => {
                 title="Transactions"
                 description="Manage your income and expenses with ease."
                 action={
-                    <AddTransactionButton onClick={() => setIsModalOpen(true)} />
+                    <AddTransactionButton onClick={openCreateModal} />
                 }
             />
 
             <div className="space-y-3">
                 <TransactionDateLabel dateRange={dateRange} />
                 <TransactionStats
-                    totalIncome={Number(statsData?.totalIncome) ?? 0}
-                    totalExpense={Number(statsData?.totalExpense) ?? 0}
-                    netBalance={Number(statsData?.totalIncome) - Number(statsData?.totalExpense)}
+                    totalIncome={Number(statsData?.totalIncome ?? 0)}
+                    totalExpense={Number(statsData?.totalExpense ?? 0)}
+                    netBalance={Number(statsData?.netBalance ?? 0)}
                     isLoading={isLoadingStats}
                 />
             </div>
@@ -106,11 +151,10 @@ const TransactionPage = () => {
                 />
 
                 <DataTable
-                    columns={transactionColumns}
+                    columns={columns}
                     data={data?.items ?? []}
                     getRowId={(row) => row.id}
                     isLoading={isLoading}
-                // enableRowSelection
                 />
 
                 <DataTablePagination
@@ -120,12 +164,12 @@ const TransactionPage = () => {
                 />
             </div>
 
-            <CreateTransactionModal
+            <TransactionModal
                 open={isModalOpen}
                 onOpenChange={setIsModalOpen}
-                categories={dummyCategories}
-                isLoading={isCreating}
-                onSubmit={handleCreateTransaction}
+                transaction={editingTransaction}
+                isLoading={editingTransaction ? isUpdating : isCreating}
+                onSubmit={handleSubmitTransaction}
             />
         </div>
     );

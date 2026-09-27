@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { CalendarIcon } from "lucide-react";
@@ -33,30 +34,58 @@ import {
 } from "@/schemas/finance/transaction-schema";
 import { useFinanceCategories } from "@/lib/api/services/hooks/finance.category.hooks";
 import { FinanceCategoryT } from "@/app/types/finanace-category";
+import { TransactionT } from "@/app/types/finanace-transaction";
 
 interface TransactionFormProps {
     formId: string;
     defaultType?: "INCOME" | "EXPENSE";
+    /** When provided, the form is pre-filled for editing this transaction. */
+    transaction?: TransactionT;
     onSubmit: (values: TransactionFormValues) => void;
+}
+
+const getDefaultValues = (
+    transaction: TransactionT | undefined,
+    defaultType: "INCOME" | "EXPENSE",
+): TransactionFormValues => {
+    if (transaction) {
+        return {
+            description: transaction.description ?? "",
+            amount: String(transaction.amount),
+            type: transaction.category.type,
+            categoryId: transaction.category.id,
+            transactionDate: new Date(transaction.transactionDate),
+        };
+    }
+    return {
+        description: "",
+        amount: "",
+        type: defaultType,
+        categoryId: "",
+        transactionDate: new Date(),
+    };
 }
 
 export function TransactionForm({
     formId,
     defaultType = "EXPENSE",
+    transaction,
     onSubmit,
 }: TransactionFormProps) {
     const { data: categoriesData, isLoading: isLoadingCategories } = useFinanceCategories();
 
     const form = useForm<TransactionFormValues>({
         resolver: zodResolver(transactionFormSchema),
-        defaultValues: {
-            description: "",
-            amount: "",
-            type: defaultType,
-            categoryId: "",
-            transactionDate: new Date(),
-        },
+        defaultValues: getDefaultValues(transaction, defaultType),
     });
+
+    // Re-sync the form whenever a different transaction is passed in (or the
+    // modal switches from create to edit), since defaultValues only apply
+    // on first mount otherwise.
+    useEffect(() => {
+        form.reset(getDefaultValues(transaction, defaultType));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [transaction?.id]);
 
     const type = useWatch({ control: form.control, name: "type" });
 

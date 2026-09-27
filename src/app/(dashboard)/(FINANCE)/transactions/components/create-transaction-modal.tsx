@@ -22,36 +22,43 @@ import {
 import { TransactionForm } from "./transaction-form";
 import { TransactionFormValues } from "@/schemas/finance/transaction-schema";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { TransactionCategoryOptionT } from "@/app/types/finanace-transaction";
+import { TransactionT } from "@/app/types/finanace-transaction";
 
-interface CreateTransactionModalProps {
+interface TransactionModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    categories: TransactionCategoryOptionT[];
+    /** Present for edit mode; omitted for create mode. */
+    transaction?: TransactionT;
     onSubmit?: (values: TransactionFormValues) => void;
     isLoading?: boolean;
 }
 
-const FORM_ID = "create-transaction-form";
+const FORM_ID = "transaction-form";
 
-export function CreateTransactionModal({
+export function TransactionModal({
     open,
     onOpenChange,
+    transaction,
     onSubmit,
     isLoading = false,
-}: CreateTransactionModalProps) {
+}: TransactionModalProps) {
     const isMobile = useIsMobile();
+    const isEditMode = Boolean(transaction);
 
     function handleSubmit(values: TransactionFormValues) {
         onSubmit?.(values);
     }
 
-    const title = "Add transaction";
-    const description = "Record a new income or expense.";
+    const title = isEditMode ? "Edit transaction" : "Add transaction";
+    const description = isEditMode
+        ? "Update this transaction's details."
+        : "Record a new income or expense.";
 
     const formBody = (
         <TransactionForm
+            key={transaction?.id ?? "create"}
             formId={FORM_ID}
+            transaction={transaction}
             onSubmit={handleSubmit}
         />
     );
@@ -64,7 +71,7 @@ export function CreateTransactionModal({
             form={FORM_ID}
         >
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Add transaction
+            {isEditMode ? "Save changes" : "Add transaction"}
         </Button>
     );
 
