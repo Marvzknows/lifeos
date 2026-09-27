@@ -18,6 +18,7 @@ import {
     useFinanceTransactions,
     useFinanceTransactionStats,
     useSoftDeleteFinanceTransaction,
+    useViewFinanceTransaction,
 } from "@/lib/api/services/hooks/finance.transaction.hooks";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useFinanceCategories } from "@/lib/api/services/hooks/finance.category.hooks";
@@ -28,6 +29,7 @@ import { toast } from "@/components/ui/toast";
 import { TransactionModal } from "./components/create-transaction-modal";
 import { ConfirmationDialog } from "@/components/confirmation-dialog";
 import { ClipboardList, Trash2 } from "lucide-react";
+import { ViewTransactionModal } from "./components/view-transaction-modal";
 
 const TransactionPage = () => {
     const [typeFilter, setTypeFilter] = useState<TransactionTypeFilter>("ALL");
@@ -40,6 +42,7 @@ const TransactionPage = () => {
     const [openDelete, setOpenDelete] = useState(false);
     const [deleteId, setDeleteId] = useState<string | null>(null);
     const [editingTransaction, setEditingTransaction] = useState<TransactionT | undefined>(undefined);
+    const [viewTransactionId, setViewTransactionId] = useState<string | null>(null)
 
     const debouncedSearch = useDebounce(search);
     const { data, isLoading } = useFinanceTransactions({
@@ -56,6 +59,7 @@ const TransactionPage = () => {
         toDate: dateRange.to,
     });
     const { data: categoriesData } = useFinanceCategories();
+    const { data: viewTransactionData, isLoading: viewTransactionLoading } = useViewFinanceTransaction(viewTransactionId ?? '');
     const { mutateAsync: createTransaction, isPending: isCreating } = useCreateFinanceTransaction();
     const { mutateAsync: updateTransaction, isPending: isUpdating } = useUpdateFinanceTransaction();
     const { mutateAsync: deleteTransaction } = useSoftDeleteFinanceTransaction()
@@ -142,6 +146,20 @@ const TransactionPage = () => {
         });
     };
 
+    const handleRowClick = (transaction: TransactionT) => {
+        setViewTransactionId(transaction.id);
+    };
+
+    const handleEditFromView = (transaction: TransactionT) => {
+        setViewTransactionId(null);
+        openEditModal(transaction);
+    };
+
+    const handleDeleteFromView = (transaction: TransactionT) => {
+        setViewTransactionId(null);
+        handleOnDeleteTransaction(transaction);
+    };
+
     return (
         <div className="space-y-8 p-6">
             <PageHeader
@@ -180,6 +198,7 @@ const TransactionPage = () => {
                     data={data?.items ?? []}
                     getRowId={(row) => row.id}
                     isLoading={isLoading}
+                    onRowClick={handleRowClick}
                 />
 
                 <DataTablePagination
@@ -211,6 +230,17 @@ const TransactionPage = () => {
                 confirmVariant="destructive"
                 onConfirm={handleDelete}
                 onCancel={() => setOpenDelete(false)}
+            />
+
+            <ViewTransactionModal
+                open={!!viewTransactionId}
+                onOpenChange={(open) => {
+                    if (!open) setViewTransactionId(null);
+                }}
+                transaction={viewTransactionData}
+                isLoading={viewTransactionLoading}
+                onEdit={handleEditFromView}
+                onDelete={handleDeleteFromView}
             />
         </div>
     );
