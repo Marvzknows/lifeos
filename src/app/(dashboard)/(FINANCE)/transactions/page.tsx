@@ -17,6 +17,7 @@ import {
     useUpdateFinanceTransaction,
     useFinanceTransactions,
     useFinanceTransactionStats,
+    useSoftDeleteFinanceTransaction,
 } from "@/lib/api/services/hooks/finance.transaction.hooks";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useFinanceCategories } from "@/lib/api/services/hooks/finance.category.hooks";
@@ -25,6 +26,8 @@ import { TransactionT } from "@/app/types/finanace-transaction";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 import { toast } from "@/components/ui/toast";
 import { TransactionModal } from "./components/create-transaction-modal";
+import { ConfirmationDialog } from "@/components/confirmation-dialog";
+import { ClipboardList, Trash2 } from "lucide-react";
 
 const TransactionPage = () => {
     const [typeFilter, setTypeFilter] = useState<TransactionTypeFilter>("ALL");
@@ -34,6 +37,8 @@ const TransactionPage = () => {
     const [page, setPage] = useState(1);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [openDelete, setOpenDelete] = useState(false);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
     const [editingTransaction, setEditingTransaction] = useState<TransactionT | undefined>(undefined);
 
     const debouncedSearch = useDebounce(search);
@@ -53,6 +58,7 @@ const TransactionPage = () => {
     const { data: categoriesData } = useFinanceCategories();
     const { mutateAsync: createTransaction, isPending: isCreating } = useCreateFinanceTransaction();
     const { mutateAsync: updateTransaction, isPending: isUpdating } = useUpdateFinanceTransaction();
+    const { mutateAsync: deleteTransaction } = useSoftDeleteFinanceTransaction()
 
     const openCreateModal = () => {
         setEditingTransaction(undefined);
@@ -93,14 +99,14 @@ const TransactionPage = () => {
         });
     }
 
-    const handleDeleteTransaction = (transaction: TransactionT) => {
-        // wire up useSoftDeleteFinanceTransaction here
-        console.log("delete", transaction.id);
+    const handleOnDeleteTransaction = (transaction: TransactionT) => {
+        setDeleteId(transaction.id);
+        setOpenDelete(true);
     }
 
     const columns = getTransactionColumns({
         onEdit: openEditModal,
-        onDelete: handleDeleteTransaction,
+        onDelete: handleOnDeleteTransaction,
     });
 
     const expenseCategories = categoriesData?.data.expense.map((category: FinanceCategoryT) => ({
@@ -114,6 +120,27 @@ const TransactionPage = () => {
     })) ?? [];
 
     const allCategories = [...incomeCategories, ...expenseCategories];
+
+    const handleDelete = () => {
+        if (!deleteId) return;
+        setOpenDelete(false);
+        toast.promise(deleteTransaction(deleteId), {
+            loading: "Deleting transaction...",
+            success: () => {
+                setDeleteId(null);
+                return {
+                    title: "Transaction deleted",
+                    description: "Your transaction has been deleted successfully.",
+                };
+            },
+            error: () => {
+                return {
+                    title: "Failed to delete transaction",
+                    description: "Something went wrong.",
+                };
+            },
+        });
+    };
 
     return (
         <div className="space-y-8 p-6">
@@ -168,6 +195,22 @@ const TransactionPage = () => {
                 transaction={editingTransaction}
                 isLoading={editingTransaction ? isUpdating : isCreating}
                 onSubmit={handleSubmitTransaction}
+            />
+
+            <ConfirmationDialog
+                open={openDelete}
+                onOpenChange={setOpenDelete}
+                intent="destructive"
+                title="Delete this transaction?"
+                description="This action cannot be undone."
+                icon={Trash2}
+                itemIcon={ClipboardList}
+                // itemTitle="Grocery shopping"
+                // itemSubtitle="Tomorrow • Personal"
+                confirmText="Delete"
+                confirmVariant="destructive"
+                onConfirm={handleDelete}
+                onCancel={() => setOpenDelete(false)}
             />
         </div>
     );
