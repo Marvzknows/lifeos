@@ -74,7 +74,7 @@ export function getTransactionColumns({
         },
         {
             id: "date",
-            header: "Date",
+            header: "Transaction Date",
             sortable: true,
             sortAccessor: (row) => new Date(row.transactionDate),
             cell: (row) => dateFormatter.format(new Date(row.transactionDate)),
@@ -102,13 +102,14 @@ export function getTransactionColumns({
             id: "actions",
             header: "",
             width: "40px",
+            className: "text-center",
             cell: (row) => (
                 <DropdownMenu>
                     <DropdownMenuTrigger>
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
+                            className="h-8 w-8 mx-auto"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <MoreVertical className="h-4 w-4" />

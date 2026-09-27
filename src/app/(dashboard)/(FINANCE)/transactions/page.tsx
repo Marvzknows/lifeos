@@ -66,19 +66,17 @@ const TransactionPage = () => {
 
     const handleSubmitTransaction = (values: TransactionFormValues) => {
         if (editingTransaction) {
-            alert("SUBMIT EDIT TRANSACTION")
-            console.log(values)
-            // toast.promise(updateTransaction({ id: editingTransaction.id, data: values }), {
-            //     loading: "Saving changes...",
-            //     success: () => {
-            //         setIsModalOpen(false);
-            //         return {
-            //             title: "Transaction updated",
-            //             description: "Your changes have been saved.",
-            //         };
-            //     },
-            //     error: (error) => error?.message ?? "Failed to update transaction.",
-            // });
+            toast.promise(updateTransaction({ id: editingTransaction.id, data: values }), {
+                loading: "Saving changes...",
+                success: () => {
+                    setIsModalOpen(false);
+                    return {
+                        title: "Transaction updated",
+                        description: "Your changes have been saved.",
+                    };
+                },
+                error: (error) => error?.message ?? "Failed to update transaction.",
+            });
             return;
         }
 
