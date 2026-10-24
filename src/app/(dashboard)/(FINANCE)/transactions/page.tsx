@@ -74,9 +74,9 @@ const TransactionPage = () => {
         setIsModalOpen(true);
     }
 
-    const handleSubmitTransaction = (values: TransactionFormValues) => {
+    const handleSubmitTransaction = async (values: TransactionFormValues) => {
         if (editingTransaction) {
-            toast.promise(updateTransaction({ id: editingTransaction.id, data: values }), {
+            await toast.promise(updateTransaction({ id: editingTransaction.id, data: values }), {
                 loading: "Saving changes...",
                 success: () => {
                     setIsModalOpen(false);
@@ -90,7 +90,7 @@ const TransactionPage = () => {
             return;
         }
 
-        toast.promise(createTransaction(values), {
+        await toast.promise(createTransaction(values), {
             loading: "Creating transaction...",
             success: () => {
                 setIsModalOpen(false);
@@ -125,10 +125,10 @@ const TransactionPage = () => {
 
     const allCategories = [...incomeCategories, ...expenseCategories];
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
         if (!deleteId) return;
         setOpenDelete(false);
-        toast.promise(deleteTransaction(deleteId), {
+        await toast.promise(deleteTransaction(deleteId), {
             loading: "Deleting transaction...",
             success: () => {
                 setDeleteId(null);

@@ -11,10 +11,18 @@ import BudgetStatusFilter from "./components/budget-status-filter";
 import AddBudgetButton from "./components/add-budget-button";
 import { BudgetRowT, BudgetStatus, dummyBudgets } from "./types";
 import { budgetColumns } from "./budget-columns";
+import { useFinanceCategories } from "@/lib/api/services/hooks/finance.category.hooks";
+import { BudgetPayloadT } from "@/schemas/finance/budget-schema";
+import { BudgetModal } from "./components/budget-modal";
 
 const BudgetPage = () => {
     const [month, setMonth] = useState(getCurrentMonth());
     const [statusFilter, setStatusFilter] = useState<BudgetStatus>("all");
+    const [modalOpen, setModalOpen] = useState(false);
+    const [editingBudget, setEditingBudget] = useState<BudgetRowT | undefined>();
+
+    const { data: categoriesData } = useFinanceCategories();
+    const expenseCategories = categoriesData?.data?.expense ?? [];
 
     const budgets = dummyBudgets;
     const isLoading = false;
@@ -38,11 +46,18 @@ const BudgetPage = () => {
     }, [budgets, statusFilter]);
 
     function handleAddBudget() {
-        console.log("add budget for", month);
+        setEditingBudget(undefined);
+        setModalOpen(true);
     }
 
     function handleEditBudget(budget: BudgetRowT) {
-        console.log("edit budget", budget);
+        setEditingBudget(budget);
+        setModalOpen(true);
+    }
+
+    function handleSubmitBudget(values: BudgetPayloadT) {
+        // TODO: edit → update mutation with { amount: values.amount }; create → create mutation with values
+        console.log(editingBudget ? "update" : "create", values);
     }
 
     function handleDeleteBudget(id: string) {
@@ -84,6 +99,15 @@ const BudgetPage = () => {
                     }
                 />
             </div>
+
+            <BudgetModal
+                open={modalOpen}
+                onOpenChange={setModalOpen}
+                categories={expenseCategories}
+                month={month}
+                budget={editingBudget}
+                onSubmit={handleSubmitBudget}
+            />
         </div>
     );
 };
