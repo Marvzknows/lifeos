@@ -8,7 +8,7 @@ type AssertCategoryAccessT = {
     allowDeleted?: boolean;
 };
 
-async function assertCategoryAccess({
+export async function assertCategoryAccess({
     userId,
     categoryId,
     allowDeleted,

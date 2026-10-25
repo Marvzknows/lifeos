@@ -18,3 +18,8 @@ export const updateBudgetSchema = budgetSchema.pick({ amount: true });
 export type UpdateBudgetPayloadT = z.infer<typeof updateBudgetSchema>;
 
 export const monthToDate = (month: string) => new Date(`${month}-01T00:00:00.000Z`);
+
+// Server
+export const getBudgetsQuerySchema = z.object({
+    month: budgetSchema.shape.month,
+});
