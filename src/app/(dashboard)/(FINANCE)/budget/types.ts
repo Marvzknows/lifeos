@@ -133,3 +133,7 @@ export const dummyBudgets: BudgetRowT[] = [
         progress: 80,
     },
 ];
+
+export type BudgetsListResponseT = {
+    data: BudgetRowT[];
+};

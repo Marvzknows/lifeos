@@ -1,31 +1,51 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Trash2, Wallet } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
 import { DataTable } from "@/components/data-table/data-table";
+import { ConfirmationDialog } from "@/components/confirmation-dialog";
+import { toast } from "@/components/ui/toast";
 import { getCurrentMonth } from "@/helpers/budget-month";
 import { countByStatus, getBudgetStatus } from "@/helpers/budget-status";
+import { peso } from "@/helpers/format-peso";
+import { useFinanceCategories } from "@/lib/api/services/hooks/finance.category.hooks";
+import {
+    useCreateFinanceBudget,
+    useDeleteFinanceBudget,
+    useFinanceBudgets,
+    useUpdateFinanceBudget,
+} from "@/lib/api/services/hooks/finance.budget.hook";
+import { BudgetPayloadT } from "@/schemas/finance/budget-schema";
 import BudgetStats from "./components/budget-stats";
 import BudgetMonthFilter from "./components/budget-month-filter";
 import BudgetStatusFilter from "./components/budget-status-filter";
 import AddBudgetButton from "./components/add-budget-button";
-import { BudgetRowT, BudgetStatus, dummyBudgets } from "./types";
-import { budgetColumns } from "./budget-columns";
-import { useFinanceCategories } from "@/lib/api/services/hooks/finance.category.hooks";
-import { BudgetPayloadT } from "@/schemas/finance/budget-schema";
 import { BudgetModal } from "./components/budget-modal";
+import { BudgetRowT, BudgetStatus } from "./types";
+import { budgetColumns } from "./budget-columns";
 
 const BudgetPage = () => {
     const [month, setMonth] = useState(getCurrentMonth());
     const [statusFilter, setStatusFilter] = useState<BudgetStatus>("all");
     const [modalOpen, setModalOpen] = useState(false);
     const [editingBudget, setEditingBudget] = useState<BudgetRowT | undefined>();
+    const [openDelete, setOpenDelete] = useState(false);
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
+    // #region Queries
     const { data: categoriesData } = useFinanceCategories();
     const expenseCategories = categoriesData?.data?.expense ?? [];
 
-    const budgets = dummyBudgets;
-    const isLoading = false;
+    const { data: budgetsData, isLoading } = useFinanceBudgets(month);
+    const budgets = useMemo(() => budgetsData?.data ?? [], [budgetsData]);
+    // #endregion
+
+    // #region Mutations
+    const { mutateAsync: createBudget, isPending: isCreating } = useCreateFinanceBudget();
+    const { mutateAsync: updateBudget, isPending: isUpdating } = useUpdateFinanceBudget();
+    const { mutateAsync: deleteBudget } = useDeleteFinanceBudget();
+    // #endregion
 
     const stats = useMemo(
         () => ({
@@ -45,24 +65,62 @@ const BudgetPage = () => {
             : sorted.filter((b) => getBudgetStatus(b) === statusFilter);
     }, [budgets, statusFilter]);
 
-    function handleAddBudget() {
+    const deletingBudget = budgets.find((b) => b.id === deleteId);
+
+    // #region Handlers
+    const handleAddBudget = () => {
         setEditingBudget(undefined);
         setModalOpen(true);
-    }
+    };
 
-    function handleEditBudget(budget: BudgetRowT) {
+    const handleEditBudget = (budget: BudgetRowT) => {
         setEditingBudget(budget);
         setModalOpen(true);
-    }
+    };
 
-    function handleSubmitBudget(values: BudgetPayloadT) {
-        // TODO: edit → update mutation with { amount: values.amount }; create → create mutation with values
-        console.log(editingBudget ? "update" : "create", values);
-    }
+    const handleSubmitBudget = (values: BudgetPayloadT) => {
+        const isEditing = Boolean(editingBudget);
 
-    function handleDeleteBudget(id: string) {
-        console.log("delete budget", id);
-    }
+        const request = editingBudget
+            ? updateBudget({ id: editingBudget.id, data: { amount: values.amount } })
+            : createBudget(values);
+
+        toast.promise(request, {
+            loading: isEditing ? "Updating budget..." : "Creating budget...",
+            success: () => {
+                setModalOpen(false);
+                setEditingBudget(undefined);
+                return {
+                    title: isEditing ? "Budget updated" : "Budget created",
+                    description: "Your budget has been saved successfully.",
+                };
+            },
+            error: (error) => error?.message ?? "Failed to save budget.",
+        });
+    };
+
+    const handleOnDeleteBudget = (id: string) => {
+        setDeleteId(id);
+        setOpenDelete(true);
+    };
+
+    const handleDeleteBudget = () => {
+        if (!deleteId) return;
+        setOpenDelete(false);
+
+        toast.promise(deleteBudget(deleteId), {
+            loading: "Deleting budget...",
+            success: () => {
+                setDeleteId(null);
+                return {
+                    title: "Budget deleted",
+                    description: "The budget has been removed.",
+                };
+            },
+            error: (error) => error?.message ?? "Failed to delete budget.",
+        });
+    };
+    // #endregion
 
     return (
         <div className="space-y-8 p-6">
@@ -87,7 +145,7 @@ const BudgetPage = () => {
                 <DataTable
                     columns={budgetColumns({
                         onEditBudget: handleEditBudget,
-                        onDeleteBudget: handleDeleteBudget,
+                        onDeleteBudget: handleOnDeleteBudget,
                     })}
                     data={rows}
                     getRowId={(row) => row.id}
@@ -107,6 +165,25 @@ const BudgetPage = () => {
                 month={month}
                 budget={editingBudget}
                 onSubmit={handleSubmitBudget}
+                isLoading={isCreating || isUpdating}
+            />
+
+            <ConfirmationDialog
+                open={openDelete}
+                onOpenChange={setOpenDelete}
+                intent="destructive"
+                title="Delete this budget?"
+                description="This permanently removes the budget. Your transactions aren't affected."
+                icon={Trash2}
+                itemIcon={Wallet}
+                itemTitle={deletingBudget?.category.name}
+                itemSubtitle={
+                    deletingBudget ? `${peso.format(deletingBudget.budgeted)} budgeted` : undefined
+                }
+                confirmText="Delete"
+                confirmVariant="destructive"
+                onConfirm={handleDeleteBudget}
+                onCancel={() => setOpenDelete(false)}
             />
         </div>
     );
