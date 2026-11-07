@@ -4,7 +4,7 @@ import { TaskStats } from "@/components/tasks/task-stats";
 import { taskColumns } from "./columns";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTablePagination } from "@/components/data-table/data-table-pagination";
-import { ClipboardList, Trash2 } from "lucide-react";
+import { ClipboardList, Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { AddTaskModal } from "./modals/add-task-modal";
 import { toast } from "@/components/ui/toast";
@@ -19,6 +19,8 @@ import { TaskUpdateStatusSchema } from "@/schemas/task/task-update-status";
 import { capitalizeWords } from "@/helpers/capitalize-words";
 import { formatDateForApi } from "@/helpers/formatDateForApi";
 import { ViewTaskDialog } from "./components/task-view-details-modal";
+import { PageHeader } from "@/components/page-header";
+import { Button } from "@/components/ui/button";
 
 const PAGE_SIZE = 10;
 
@@ -169,6 +171,17 @@ const TasksPage = () => {
 
   return (
     <div className="space-y-6 p-6">
+      <PageHeader
+        title="Tasks"
+        description="Manage your tasks efficiently"
+        action={
+          <Button className="h-8 text-xs w-full rounded-sm bg-indigo-600 px-3 text-white hover:bg-indigo-500 sm:w-auto"
+            onClick={() => setIsAddTaskModalOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add Task
+          </Button>
+        }
+      />
       <TaskStats stats={stats} isLoading={isLoadingStats} />
 
       <div className="space-y-6">

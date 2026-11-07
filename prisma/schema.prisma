@@ -29,6 +29,11 @@ enum TaskStatus {
   COMPLETED
 }
 
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
 model User {
   id        String   @id @db.Uuid
   email     String   @unique
@@ -38,7 +43,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  tasks Task[]
+  tasks        Task[]
+  categories   Category[]
+  transactions Transaction[]
+  budgets      Budget[]
 }
 
 model Task {
@@ -55,3 +63,66 @@ model Task {
   userId String @db.Uuid
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+// #region FINANCE
+
+model Category {
+  id    String       @id @default(uuid()) @db.Uuid
+  name  String
+  type  CategoryType
+  icon  String?
+  color String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  transactions Transaction[]
+  budgets      Budget[]
+
+  @@unique([userId, name, type])
+}
+
+model Transaction {
+  id              String   @id @default(uuid()) @db.Uuid
+  amount          Decimal  @db.Decimal(12, 2)
+  description     String?
+  transactionDate DateTime
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  categoryId String   @db.Uuid
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@index([userId, transactionDate])
+  @@index([userId, categoryId])
+}
+
+model Budget {
+  id     String   @id @default(uuid()) @db.Uuid
+  amount Decimal  @db.Decimal(12, 2)
+  month  DateTime @db.Date
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  categoryId String   @db.Uuid
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, categoryId, month])
+  @@index([userId, month])
+}
+
+// #endregion
