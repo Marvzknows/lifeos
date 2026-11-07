@@ -46,6 +46,7 @@ model User {
   tasks        Task[]
   categories   Category[]
   transactions Transaction[]
+  budgets      Budget[]
 }
 
 model Task {
@@ -80,6 +81,7 @@ model Category {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   transactions Transaction[]
+  budgets      Budget[]
 
   @@unique([userId, name, type])
 }
@@ -102,6 +104,25 @@ model Transaction {
 
   @@index([userId, transactionDate])
   @@index([userId, categoryId])
+}
+
+model Budget {
+  id     String   @id @default(uuid()) @db.Uuid
+  amount Decimal  @db.Decimal(12, 2)
+  month  DateTime @db.Date
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  userId String @db.Uuid
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  categoryId String   @db.Uuid
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+
+  @@unique([userId, categoryId, month])
+  @@index([userId, month])
 }
 
 // #endregion
